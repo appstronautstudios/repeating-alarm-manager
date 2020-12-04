@@ -11,7 +11,8 @@ public class RepeatingAlarm {
     private int minute;
     private long interval;
     private String title;
-    private String descrption;
+    private String description;
+    private String activityClass;
     private boolean active;
 
     public RepeatingAlarm(JSONObject object) {
@@ -20,17 +21,19 @@ public class RepeatingAlarm {
         minute = object.optInt(Constants.ALARM_MINUTES);
         interval = object.optLong(Constants.ALARM_INTERVAL);
         title = object.optString(Constants.ALARM_TITLE);
-        descrption = object.optString(Constants.ALARM_DESCRIPTION);
+        description = object.optString(Constants.ALARM_DESCRIPTION);
+        activityClass = object.optString(Constants.ALARM_CLICK_ACTIVITY);
         active = object.optBoolean(Constants.ALARM_ACTIVE);
     }
 
-    public RepeatingAlarm(int id, int hours, int minutes, long interval, String title, String description, boolean active) {
+    public RepeatingAlarm(int id, int hours, int minutes, long interval, String title, String description, String activity, boolean active) {
         this.id = id;
         this.hour = hours;
         this.minute = minutes;
         this.interval = interval;
         this.title = title;
-        this.descrption = description;
+        this.description = description;
+        this.activityClass = activity;
         this.active = active;
     }
 
@@ -43,6 +46,7 @@ public class RepeatingAlarm {
             alarmJson.put(Constants.ALARM_INTERVAL, getInterval());
             alarmJson.put(Constants.ALARM_TITLE, getTitle());
             alarmJson.put(Constants.ALARM_DESCRIPTION, getDescription());
+            alarmJson.put(Constants.ALARM_CLICK_ACTIVITY, getActivityClass());
             alarmJson.put(Constants.ALARM_ACTIVE, isActive());
         } catch (JSONException e) {
             e.printStackTrace();
@@ -71,7 +75,11 @@ public class RepeatingAlarm {
     }
 
     public String getDescription() {
-        return descrption;
+        return description;
+    }
+
+    public String getActivityClass() {
+        return activityClass;
     }
 
     public boolean isActive() {

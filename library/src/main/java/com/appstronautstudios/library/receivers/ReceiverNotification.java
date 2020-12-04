@@ -1,10 +1,20 @@
 package com.appstronautstudios.library.receivers;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
 import android.util.Log;
+
+import com.appstronautstudios.library.managers.RepeatingAlarmManager;
+import com.appstronautstudios.library.model.RepeatingAlarm;
+import com.appstronautstudios.library.utils.Constants;
+
+import androidx.core.app.NotificationCompat;
 
 public class ReceiverNotification extends BroadcastReceiver {
 
@@ -14,42 +24,52 @@ public class ReceiverNotification extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // TODO complete. Have to somehow get receivers registered either in lib or as part of
-        // setup instructions for users
-        Log.d("CHANNEL_ID", intent.toString());
-/*
-        // Android 8.0 garbage
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            CharSequence channelName = "Daily reminders";
-            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
-            notificationChannel.enableLights(true);
-            notificationChannel.setLightColor(Color.BLUE);
-            if (mNotificationManager != null) {
-                mNotificationManager.createNotificationChannel(notificationChannel);
+        // get id from intent
+        Bundle extras = intent.getExtras();
+        int alarmId = -1;
+        if (extras != null) {
+            alarmId = extras.getInt(Constants.ALARM_ID);
+            Log.d(CHANNEL_ID, "alarmId:" + alarmId);
+        }
+
+        // did we catch a valid alarm
+        if (alarmId >= 0) {
+            RepeatingAlarm alarm = RepeatingAlarmManager.getInstance().getAlarm(context, alarmId);
+
+            // Android 8.0 garbage
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                CharSequence channelName = "Daily reminders";
+                NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+                notificationChannel.enableLights(true);
+                notificationChannel.setLightColor(Color.BLUE);
+                if (mNotificationManager != null) {
+                    mNotificationManager.createNotificationChannel(notificationChannel);
+                }
+            }
+
+            // create intent that will kick user to main activity on notification click
+            try {
+                Intent activityIntent = new Intent(context, Class.forName(alarm.getActivityClass()));
+                activityIntent.putExtra("notificationClicked", true);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+
+                // build local notification
+                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                        .setStyle(new NotificationCompat.BigTextStyle())
+                        .setContentTitle(alarm.getTitle())
+                        .setContentText(alarm.getDescription())
+                        .setContentIntent(pendingIntent)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true);
+
+                // notify
+                if (mNotificationManager != null) {
+                    mNotificationManager.notify(1, notificationBuilder.build());
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
         }
-
-        // create intent that will kick user to main activity on notification click
-        Intent activityIntent = new Intent(context, MainActivity.class);
-        activityIntent.putExtra("notificationClicked", true);
-        activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
-
-        // build local notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setStyle(new NotificationCompat.BigTextStyle())
-                .setSmallIcon(R.drawable.ic_launcher_alert)
-                .setContentTitle(context.getString(R.string.app_name))
-                .setContentText(context.getString(R.string.notification_text))
-                .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
-
-        // notify
-        if (mNotificationManager != null) {
-            mNotificationManager.notify(1, notificationBuilder.build());
-        }
-
- */
     }
 }

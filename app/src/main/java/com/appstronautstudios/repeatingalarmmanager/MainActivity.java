@@ -11,6 +11,7 @@ import com.appstronautstudios.library.managers.RepeatingAlarmManager;
 import com.appstronautstudios.library.model.RepeatingAlarm;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,37 +25,44 @@ public class MainActivity extends AppCompatActivity {
 
         ListView alarmsList = findViewById(R.id.alarms);
 
+        Calendar cal = Calendar.getInstance();
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int minute = cal.get(Calendar.MINUTE);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                1,
-                14,
-                0,
+                10,
+                hour,
+                minute,
                 TimeUnit.MINUTES.toMillis(5),
                 "test 1",
                 "abcdefghijklmnop",
+                MainActivity.class.toString(),
                 null);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                2,
-                14,
-                5,
+                11,
+                hour,
+                minute + 5,
                 TimeUnit.MINUTES.toMillis(5),
                 "test 2",
                 "abcdefghijklmnop",
+                MainActivity.class.toString(),
                 null);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                3,
-                14,
-                10,
+                12,
+                hour,
+                minute + 10,
                 TimeUnit.MINUTES.toMillis(5),
                 "test 3",
                 "abcdefghijklmnop",
+                MainActivity.class.toString(),
                 null);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                4,
-                14,
-                15,
+                13,
+                hour,
+                minute + 15,
                 TimeUnit.MINUTES.toMillis(5),
                 "test 4",
                 "abcdefghijklmnop",
+                MainActivity.class.toString(),
                 null);
 
         alarmsList.setAdapter(new CustomAdapter(RepeatingAlarmManager.getInstance().getAllAlarms(MainActivity.this)));

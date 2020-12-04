@@ -25,6 +25,11 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * https://github.com/Ajeet-Meena/SimpleAlarmManager-Android
+ * https://github.com/alberto234/schedule-alarm-manager
+ * https://github.com/zubairehman/AlarmManager
+ */
 public class RepeatingAlarmManager {
 
     private static final RepeatingAlarmManager INSTANCE = new RepeatingAlarmManager();
@@ -40,7 +45,7 @@ public class RepeatingAlarmManager {
         return INSTANCE;
     }
 
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, SuccessFailListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, String activityClass, SuccessFailListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -64,17 +69,17 @@ public class RepeatingAlarmManager {
             return;
         }
 
-        // check if id already used
+        // exists in our list. Remove it
         if (usedIds.contains(id)) {
-            if (listener != null) {
-                listener.failure("Alarm already exists with this id");
+            for (RepeatingAlarm alarm : alarms) {
+                if (alarm.getId() == id) {
+                    removeAlarm(context, alarm);
+                }
             }
-            return;
         }
 
-
         // create alarm object, schedule alarm and add it to prefs
-        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, true);
+        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activityClass, true);
         scheduleRepeatingAlarm(context, addedAlarm);
         addAlarmPref(context, addedAlarm);
 
@@ -124,6 +129,7 @@ public class RepeatingAlarmManager {
 
         // create alarm intent and schedule (will be delayed during "doze periods")
         Intent intent = new Intent(context, ReceiverNotification.class);
+        intent.putExtra(Constants.ALARM_ID, alarm.getId());
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
@@ -146,7 +152,6 @@ public class RepeatingAlarmManager {
             alarmManager.cancel(pendingIntent);
         }
     }
-
 
     public ArrayList<RepeatingAlarm> getAllAlarms(Context context) {
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(context);
