@@ -1,4 +1,4 @@
-package com.appstronautstudios.repeatingalarmmanager;
+package com.appstronautstudios.repeatingalarmmanagerdemo;
 
 import android.os.Bundle;
 import android.view.View;
