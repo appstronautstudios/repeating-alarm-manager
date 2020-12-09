@@ -48,8 +48,9 @@ public class ReceiverNotification extends BroadcastReceiver {
             }
 
             // create intent that will kick user to main activity on notification click
+            Intent activityIntent;
             try {
-                Intent activityIntent = new Intent(context, Class.forName(alarm.getActivityClass()));
+                activityIntent = new Intent(context, Class.forName(alarm.getActivityClass()));
                 activityIntent.putExtra("notificationClicked", true);
                 activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
@@ -60,6 +61,7 @@ public class ReceiverNotification extends BroadcastReceiver {
                         .setContentTitle(alarm.getTitle())
                         .setContentText(alarm.getDescription())
                         .setContentIntent(pendingIntent)
+                        .setSmallIcon(android.R.drawable.alert_light_frame)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true);
 

@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
                 TimeUnit.MINUTES.toMillis(5),
                 "test 1",
                 "abcdefghijklmnop",
-                MainActivity.class.toString(),
+                MainActivity.this,
                 null);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
                 11,
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
                 TimeUnit.MINUTES.toMillis(5),
                 "test 2",
                 "abcdefghijklmnop",
-                MainActivity.class.toString(),
+                MainActivity.this,
                 null);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
                 12,
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 TimeUnit.MINUTES.toMillis(5),
                 "test 3",
                 "abcdefghijklmnop",
-                MainActivity.class.toString(),
+                MainActivity.this,
                 null);
         RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
                 13,
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 TimeUnit.MINUTES.toMillis(5),
                 "test 4",
                 "abcdefghijklmnop",
-                MainActivity.class.toString(),
+                MainActivity.this,
                 null);
 
         alarmsList.setAdapter(new CustomAdapter(RepeatingAlarmManager.getInstance().getAllAlarms(MainActivity.this)));
