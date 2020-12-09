@@ -1,6 +1,6 @@
-package com.appstronautstudios.library.model;
+package com.appstronautstudios.repeatingalarmmanager.model;
 
-import com.appstronautstudios.library.utils.Constants;
+import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;

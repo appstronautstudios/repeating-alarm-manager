@@ -8,13 +8,13 @@
         android:supportsRtl="true">
         <!-- receivers -->
         <receiver
-            android:name="com.appstronautstudios.library.receivers.ReceiverNotification"
+            android:name="com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverNotification"
             android:enabled="true"
             android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED" />
         <!-- Will not be called unless the application explicitly enables it -->
         <receiver
-            android:name="com.appstronautstudios.library.receivers.ReceiverDeviceBoot"
+            android:name="com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverDeviceBoot"
             android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

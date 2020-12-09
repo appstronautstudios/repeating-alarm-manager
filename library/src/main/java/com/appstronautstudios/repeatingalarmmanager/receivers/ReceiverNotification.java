@@ -1,4 +1,4 @@
-package com.appstronautstudios.library.receivers;
+package com.appstronautstudios.repeatingalarmmanager.receivers;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,9 +10,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.appstronautstudios.library.managers.RepeatingAlarmManager;
-import com.appstronautstudios.library.model.RepeatingAlarm;
-import com.appstronautstudios.library.utils.Constants;
+import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
+import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
+import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 
 import androidx.core.app.NotificationCompat;
 

@@ -1,4 +1,4 @@
-package com.appstronautstudios.library.managers;
+package com.appstronautstudios.repeatingalarmmanager.managers;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -10,11 +10,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 
-import com.appstronautstudios.library.model.RepeatingAlarm;
-import com.appstronautstudios.library.receivers.ReceiverDeviceBoot;
-import com.appstronautstudios.library.receivers.ReceiverNotification;
-import com.appstronautstudios.library.utils.Constants;
-import com.appstronautstudios.library.utils.SuccessFailListener;
+import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
+import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverDeviceBoot;
+import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverNotification;
+import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
+import com.appstronautstudios.repeatingalarmmanager.utils.SuccessFailListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -108,6 +108,20 @@ public class RepeatingAlarmManager {
         setAlarmsPref(context, updatedAlarms);
     }
 
+    /**
+     * Cancel all managed alarms and remove them from the managed set
+     *
+     * @param context - context
+     */
+    public void removeAllAlarms(Context context) {
+        ArrayList<RepeatingAlarm> allAlarms = getAllAlarms(context);
+        for (RepeatingAlarm repeatingAlarm : allAlarms) {
+            cancelAlarm(context, repeatingAlarm);
+        }
+
+        setAlarmsPref(context, null);
+    }
+
     public void enableAlarm(Context context, RepeatingAlarm alarm) {
         // todo implement
         alarm.setActive(true);
@@ -134,7 +148,7 @@ public class RepeatingAlarmManager {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, alarmIntent);
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
         }
 
         // enable boot receiver
@@ -184,6 +198,10 @@ public class RepeatingAlarmManager {
     }
 
     private void setAlarmsPref(Context context, ArrayList<RepeatingAlarm> alarms) {
+        if (alarms == null) {
+            alarms = new ArrayList<>();
+        }
+
         // convert alarm objects to json string
         JSONArray jsonArray = new JSONArray();
         for (RepeatingAlarm alarm : alarms) {

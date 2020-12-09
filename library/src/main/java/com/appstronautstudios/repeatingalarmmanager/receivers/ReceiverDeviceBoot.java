@@ -1,10 +1,10 @@
-package com.appstronautstudios.library.receivers;
+package com.appstronautstudios.repeatingalarmmanager.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.appstronautstudios.library.managers.RepeatingAlarmManager;
+import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
 
 /**
  * @author Nilanchala

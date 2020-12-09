@@ -7,8 +7,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.appstronautstudios.library.managers.RepeatingAlarmManager;
-import com.appstronautstudios.library.model.RepeatingAlarm;
+import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
+import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
         ListView alarmsList = findViewById(R.id.alarms);
 
+        RepeatingAlarmManager.getInstance().removeAllAlarms(MainActivity.this);
+
         Calendar cal = Calendar.getInstance();
         int hour = cal.get(Calendar.HOUR_OF_DAY);
         int minute = cal.get(Calendar.MINUTE);
@@ -34,33 +36,6 @@ public class MainActivity extends AppCompatActivity {
                 minute,
                 TimeUnit.MINUTES.toMillis(5),
                 "test 1",
-                "abcdefghijklmnop",
-                MainActivity.this,
-                null);
-        RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                11,
-                hour,
-                minute + 5,
-                TimeUnit.MINUTES.toMillis(5),
-                "test 2",
-                "abcdefghijklmnop",
-                MainActivity.this,
-                null);
-        RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                12,
-                hour,
-                minute + 10,
-                TimeUnit.MINUTES.toMillis(5),
-                "test 3",
-                "abcdefghijklmnop",
-                MainActivity.this,
-                null);
-        RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                13,
-                hour,
-                minute + 15,
-                TimeUnit.MINUTES.toMillis(5),
-                "test 4",
                 "abcdefghijklmnop",
                 MainActivity.this,
                 null);

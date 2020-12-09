@@ -1,4 +1,4 @@
-package com.appstronautstudios.library.utils;
+package com.appstronautstudios.repeatingalarmmanager.utils;
 
 public class Constants {
 
