@@ -46,6 +46,19 @@ public class RepeatingAlarmManager {
         return INSTANCE;
     }
 
+    /**
+     * add alarm to managed set and schedule it
+     *
+     * @param context     - context
+     * @param id          - alarm id. Will override if already exists
+     * @param hour        - hour of date to set alarm (0-24)
+     * @param minute      - minute of hour to set alarm (0-60)
+     * @param interval    - MS interval to repeat alarm over
+     * @param title       - title for notification
+     * @param description - detail text for notification
+     * @param activity    - activity to be opened on notification click
+     * @param listener    - success/fail listener for add operation
+     */
     public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, Activity activity, SuccessFailListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
@@ -72,11 +85,7 @@ public class RepeatingAlarmManager {
 
         // exists in our list. Remove it
         if (usedIds.contains(id)) {
-            for (RepeatingAlarm alarm : alarms) {
-                if (alarm.getId() == id) {
-                    removeAlarm(context, alarm);
-                }
-            }
+            removeAlarm(context, id);
         }
 
         // create alarm object, schedule alarm and add it to prefs
@@ -89,83 +98,19 @@ public class RepeatingAlarmManager {
         }
     }
 
-    /**
-     * Cancel chosen alarm and remove it from the managed set
-     *
-     * @param context - context
-     * @param alarm   - alarm to cancel and remove
-     */
-    public void removeAlarm(Context context, RepeatingAlarm alarm) {
-        cancelAlarm(context, alarm);
+    private void updateAlarm(Context context, RepeatingAlarm alarm) {
         ArrayList<RepeatingAlarm> allAlarms = getAllAlarms(context);
         ArrayList<RepeatingAlarm> updatedAlarms = new ArrayList<>();
         for (RepeatingAlarm repeatingAlarm : allAlarms) {
             if (repeatingAlarm.getId() != alarm.getId()) {
                 updatedAlarms.add(repeatingAlarm);
+            } else {
+                // alarm exists in our set. Replace it with incoming alarm
+                updatedAlarms.add(alarm);
             }
         }
 
         setAlarmsPref(context, updatedAlarms);
-    }
-
-    /**
-     * Cancel all managed alarms and remove them from the managed set
-     *
-     * @param context - context
-     */
-    public void removeAllAlarms(Context context) {
-        ArrayList<RepeatingAlarm> allAlarms = getAllAlarms(context);
-        for (RepeatingAlarm repeatingAlarm : allAlarms) {
-            cancelAlarm(context, repeatingAlarm);
-        }
-
-        setAlarmsPref(context, null);
-    }
-
-    public void enableAlarm(Context context, RepeatingAlarm alarm) {
-        // todo implement
-        alarm.setActive(true);
-        scheduleRepeatingAlarm(context, alarm);
-    }
-
-    public void disableAlarm(Context context, RepeatingAlarm alarm) {
-        // todo implement
-        alarm.setActive(false);
-        cancelAlarm(context, alarm);
-    }
-
-    private void scheduleRepeatingAlarm(Context context, RepeatingAlarm alarm) {
-        // calculate alarm time based on hour and minute
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
-        calendar.set(Calendar.MINUTE, alarm.getMinute());
-        calendar.set(Calendar.SECOND, 0);
-
-        // create alarm intent and schedule (will be delayed during "doze periods")
-        Intent intent = new Intent(context, ReceiverNotification.class);
-        intent.putExtra(Constants.ALARM_ID, alarm.getId());
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
-        }
-
-        // enable boot receiver
-        ComponentName receiver = new ComponentName(context, ReceiverDeviceBoot.class);
-        PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(receiver,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP);
-    }
-
-    private void cancelAlarm(Context context, RepeatingAlarm alarm) {
-        Intent intent = new Intent(context, ReceiverNotification.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_NO_CREATE);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (pendingIntent != null && alarmManager != null) {
-            alarmManager.cancel(pendingIntent);
-        }
     }
 
     public ArrayList<RepeatingAlarm> getAllAlarms(Context context) {
@@ -197,6 +142,132 @@ public class RepeatingAlarmManager {
         return null;
     }
 
+    /**
+     * Cancel chosen alarm and remove it from the managed set
+     *
+     * @param context - context
+     * @param id      - id of alarm to cancel and remove
+     */
+    public void removeAlarm(Context context, int id) {
+        cancelAlarm(context, id);
+        ArrayList<RepeatingAlarm> allAlarms = getAllAlarms(context);
+        ArrayList<RepeatingAlarm> updatedAlarms = new ArrayList<>();
+        for (RepeatingAlarm repeatingAlarm : allAlarms) {
+            if (repeatingAlarm.getId() != id) {
+                updatedAlarms.add(repeatingAlarm);
+            }
+        }
+
+        setAlarmsPref(context, updatedAlarms);
+    }
+
+    /**
+     * Cancel all managed alarms and remove them from the managed set
+     *
+     * @param context - context
+     */
+    public void removeAllAlarms(Context context) {
+        ArrayList<RepeatingAlarm> allAlarms = getAllAlarms(context);
+        for (RepeatingAlarm repeatingAlarm : allAlarms) {
+            cancelAlarm(context, repeatingAlarm.getId());
+        }
+
+        setAlarmsPref(context, null);
+    }
+
+    /**
+     * activate managed alarm if it exists.
+     *
+     * @param context - context
+     * @param id      - id of alarm to active
+     * @return - true if activated, false otherwise (e.g. no alarm with id found)
+     */
+    public boolean activateAlarm(Context context, int id) {
+        RepeatingAlarm alarm = getAlarm(context, id);
+        if (alarm != null) {
+            alarm.setActive(true);
+            scheduleRepeatingAlarm(context, alarm);
+
+            updateAlarm(context, alarm);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * deactivate managed alarm if it exists.
+     *
+     * @param context - context
+     * @param id      - id of alarm to deactivate
+     * @return - true if deactivated, false otherwise (e.g. no alarm with id found)
+     */
+    public boolean deactivateAlarm(Context context, int id) {
+        RepeatingAlarm alarm = getAlarm(context, id);
+        if (alarm != null) {
+            alarm.setActive(false);
+            cancelAlarm(context, id);
+
+            updateAlarm(context, alarm);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * schedule alarm. Will NOT update pref storage
+     *
+     * @param context - context
+     * @param alarm   - alarm to schedule
+     */
+    private void scheduleRepeatingAlarm(Context context, RepeatingAlarm alarm) {
+        // calculate alarm time based on hour and minute
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
+        calendar.set(Calendar.MINUTE, alarm.getMinute());
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        if (Calendar.getInstance().after(calendar)) {
+            // alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
+            // already 2pm). To prevent from firing immediately just forward a full interval.
+            calendar.setTimeInMillis(calendar.getTimeInMillis() + alarm.getInterval());
+        }
+
+        // create alarm intent and schedule (will be delayed during "doze periods")
+        Intent intent = new Intent(context, ReceiverNotification.class);
+        intent.putExtra(Constants.ALARM_ID, alarm.getId());
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
+        }
+
+        // enable boot receiver
+        ComponentName receiver = new ComponentName(context, ReceiverDeviceBoot.class);
+        PackageManager pm = context.getPackageManager();
+        pm.setComponentEnabledSetting(receiver,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
+    }
+
+    /**
+     * cancel alarm. Will NOT update pref storage
+     *
+     * @param context - context
+     * @param id      - alarm to schedule
+     */
+    private void cancelAlarm(Context context, int id) {
+        Intent intent = new Intent(context, ReceiverNotification.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_NO_CREATE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (pendingIntent != null && alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
+    }
+
     private void setAlarmsPref(Context context, ArrayList<RepeatingAlarm> alarms) {
         if (alarms == null) {
             alarms = new ArrayList<>();
@@ -224,7 +295,7 @@ public class RepeatingAlarmManager {
     public void resetAllAlarms(Context context) {
         ArrayList<RepeatingAlarm> repeatingAlarms = getAllAlarms(context);
         for (RepeatingAlarm alarm : repeatingAlarms) {
-            cancelAlarm(context, alarm);
+            cancelAlarm(context, alarm.getId());
             if (alarm.isActive()) {
                 scheduleRepeatingAlarm(context, alarm);
             }

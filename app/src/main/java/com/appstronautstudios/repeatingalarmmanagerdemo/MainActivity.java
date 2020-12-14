@@ -1,19 +1,27 @@
 package com.appstronautstudios.repeatingalarmmanagerdemo;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,32 +31,48 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView alarmsList = findViewById(R.id.alarms);
+        // set up back button
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
-        RepeatingAlarmManager.getInstance().removeAllAlarms(MainActivity.this);
+        setTitle("Alarm Manager");
 
-        Calendar cal = Calendar.getInstance();
-        int hour = cal.get(Calendar.HOUR_OF_DAY);
-        int minute = cal.get(Calendar.MINUTE);
-        RepeatingAlarmManager.getInstance().addAlarm(MainActivity.this,
-                10,
-                hour,
-                minute,
-                TimeUnit.MINUTES.toMillis(5),
-                "test 1",
-                "abcdefghijklmnop",
-                MainActivity.this,
-                null);
-
-        alarmsList.setAdapter(new CustomAdapter(RepeatingAlarmManager.getInstance().getAllAlarms(MainActivity.this)));
+        FloatingActionButton btn = findViewById(R.id.fab);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CreateAlarmActivity.class));
+            }
+        });
     }
 
-    public class CustomAdapter extends BaseAdapter {
+    @Override
+    public void onResume() {
+        super.onResume();
+        ListView listView = findViewById(R.id.alarm_list);
+        listView.setAdapter(new AlarmAdapter(MainActivity.this, RepeatingAlarmManager.getInstance().getAllAlarms(MainActivity.this)));
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public class AlarmAdapter extends ArrayAdapter<RepeatingAlarm> {
         private ArrayList<RepeatingAlarm> alarms;
 
-        CustomAdapter(ArrayList<RepeatingAlarm> alarms) {
-            this.alarms = alarms;
+        AlarmAdapter(Context context, ArrayList<RepeatingAlarm> items) {
+            super(context, 0, items);
+
+            alarms = items;
         }
 
         @Override
@@ -63,35 +87,60 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public long getItemId(int i) {
-            return 0;
+            return i;
         }
 
+        @NonNull
         @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            if (view == null) {
-                view = getLayoutInflater().inflate(R.layout.list_item_alarm, viewGroup, false);
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_alarm, parent, false);
             }
 
-            TextView titleTV = view.findViewById(R.id.title);
-            TextView descriptionTV = view.findViewById(R.id.description);
-            TextView detailsTV = view.findViewById(R.id.details);
-            View cancelBTN = view.findViewById(R.id.cancel);
+            final RepeatingAlarm alarm = getItem(position);
 
-            final RepeatingAlarm alarm = getItem(i);
-            titleTV.setText(alarm.getTitle());
-            descriptionTV.setText(alarm.getDescription());
-            detailsTV.setText("Repeats every " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m at " + alarm.getHumanReadableTime());
+            TextView alarmTitleTV = convertView.findViewById(R.id.alarm_title);
+            TextView alarmDescriptionTV = convertView.findViewById(R.id.alarm_description);
+            TextView startTimeTV = convertView.findViewById(R.id.start_time);
+            TextView intervalTV = convertView.findViewById(R.id.interval);
+            CheckBox enableDisableCB = convertView.findViewById(R.id.enable_disable);
+            View removeBTN = convertView.findViewById(R.id.alarm_remove);
 
-            cancelBTN.setOnClickListener(new View.OnClickListener() {
+            alarmTitleTV.setText(alarm.getTitle());
+            alarmDescriptionTV.setText(alarm.getDescription());
+            startTimeTV.setText(alarm.getHumanReadableTime());
+            if (TimeUnit.MILLISECONDS.toHours(alarm.getInterval()) <= 24) {
+                intervalTV.setText(TimeUnit.MILLISECONDS.toHours(alarm.getInterval()) + "h");
+            } else {
+                intervalTV.setText(TimeUnit.MILLISECONDS.toDays(alarm.getInterval()) + "d");
+            }
+
+            enableDisableCB.setChecked(alarm.isActive());
+            enableDisableCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    alarm.setActive(b); // update local object
+                    if (b) {
+                        RepeatingAlarmManager.getInstance().activateAlarm(MainActivity.this, alarm.getId());
+                        notifyDataSetChanged();
+                    } else {
+                        RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId());
+                        notifyDataSetChanged();
+                    }
+                }
+            });
+
+            removeBTN.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    RepeatingAlarmManager.getInstance().removeAlarm(MainActivity.this, alarm);
-                    alarms.remove(alarm);
+                    alarms.remove(alarm); // update local dataset
+                    RepeatingAlarmManager.getInstance().removeAlarm(MainActivity.this, alarm.getId());
                     notifyDataSetChanged();
                 }
             });
 
-            return view;
+            return convertView;
         }
     }
 }

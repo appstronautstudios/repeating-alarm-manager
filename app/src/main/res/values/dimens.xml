@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="item_margin_half">4dp</dimen>
+    <dimen name="item_margin">8dp</dimen>
+    <dimen name="item_margin_double">16dp</dimen>
+    <dimen name="item_margin_triple">24dp</dimen>
+
+    <dimen name="text_size_huge">40sp</dimen>
+    <dimen name="text_size_very_large">22sp</dimen>
+    <dimen name="text_size_large">17sp</dimen>
+    <dimen name="text_size_regular">15sp</dimen>
+    <dimen name="text_size_small">12sp</dimen>
+</resources>
