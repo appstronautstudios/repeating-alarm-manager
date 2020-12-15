@@ -1,6 +1,5 @@
 package com.appstronautstudios.repeatingalarmmanager.managers;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -56,10 +55,10 @@ public class RepeatingAlarmManager {
      * @param interval    - MS interval to repeat alarm over
      * @param title       - title for notification
      * @param description - detail text for notification
-     * @param activity    - activity to be opened on notification click
+     * @param activity    - activity class to be opened on notification click
      * @param listener    - success/fail listener for add operation
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, Activity activity, SuccessFailListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, Class activity, SuccessFailListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -89,7 +88,7 @@ public class RepeatingAlarmManager {
         }
 
         // create alarm object, schedule alarm and add it to prefs
-        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity.getClass().getName(), true);
+        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity.getName(), true);
         scheduleRepeatingAlarm(context, addedAlarm);
         addAlarmPref(context, addedAlarm);
 
@@ -242,7 +241,7 @@ public class RepeatingAlarmManager {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
         }
 
         // enable boot receiver

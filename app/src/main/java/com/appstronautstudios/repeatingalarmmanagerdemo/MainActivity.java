@@ -110,7 +110,9 @@ public class MainActivity extends AppCompatActivity {
             alarmTitleTV.setText(alarm.getTitle());
             alarmDescriptionTV.setText(alarm.getDescription());
             startTimeTV.setText(alarm.getHumanReadableTime());
-            if (TimeUnit.MILLISECONDS.toHours(alarm.getInterval()) <= 24) {
+            if (TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) < 60) {
+                intervalTV.setText(TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
+            } else if (TimeUnit.MILLISECONDS.toHours(alarm.getInterval()) <= 24) {
                 intervalTV.setText(TimeUnit.MILLISECONDS.toHours(alarm.getInterval()) + "h");
             } else {
                 intervalTV.setText(TimeUnit.MILLISECONDS.toDays(alarm.getInterval()) + "d");

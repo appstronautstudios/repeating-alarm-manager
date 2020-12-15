@@ -161,7 +161,7 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 timeInterval,
                 alarmNameET.getText().toString(),
                 alarmDescET.getText().toString(),
-                CreateAlarmActivity.this,
+                CreateAlarmActivity.class,
                 new SuccessFailListener() {
                     @Override
                     public void success(Object object) {
