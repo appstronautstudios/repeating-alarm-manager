@@ -243,13 +243,6 @@ public class RepeatingAlarmManager {
         if (alarmManager != null) {
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
         }
-
-        // enable boot receiver
-        ComponentName receiver = new ComponentName(context, ReceiverDeviceBoot.class);
-        PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(receiver,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP);
     }
 
     /**
