@@ -67,7 +67,7 @@ public class ReceiverNotification extends BroadcastReceiver {
 
                 // notify
                 if (mNotificationManager != null) {
-                    mNotificationManager.notify(1, notificationBuilder.build());
+                    mNotificationManager.notify(alarmId, notificationBuilder.build());
                 }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();

@@ -114,6 +114,9 @@ public class CreateAlarmActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 switch (i) {
+                    case R.id.fifteen_mins:
+                        timeInterval = TimeUnit.MINUTES.toMillis(15);
+                        break;
                     case R.id.half_day:
                         timeInterval = TimeUnit.HOURS.toMillis(12);
                         break;

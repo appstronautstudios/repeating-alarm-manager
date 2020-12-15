@@ -230,9 +230,9 @@ public class RepeatingAlarmManager {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        if (Calendar.getInstance().after(calendar)) {
-            // alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
-            // already 2pm). To prevent from firing immediately just forward a full interval.
+        // check if alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
+        // already 2pm). To prevent from firing immediately move forward intervals until in future
+        while (Calendar.getInstance().after(calendar)) {
             calendar.setTimeInMillis(calendar.getTimeInMillis() + alarm.getInterval());
         }
 

@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_alarm);
 
         // set up back button
         ActionBar actionBar = getSupportActionBar();
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        setTitle("Alarm Manager");
+        setTitle("Notification Manager");
 
         FloatingActionButton btn = findViewById(R.id.fab);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -120,27 +120,29 @@ public class MainActivity extends AppCompatActivity {
             enableDisableCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    alarm.setActive(b); // update local object
                     if (b) {
                         RepeatingAlarmManager.getInstance().activateAlarm(MainActivity.this, alarm.getId());
-                        notifyDataSetChanged();
                     } else {
                         RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId());
-                        notifyDataSetChanged();
                     }
+                    refreshData();
                 }
             });
 
             removeBTN.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    alarms.remove(alarm); // update local dataset
                     RepeatingAlarmManager.getInstance().removeAlarm(MainActivity.this, alarm.getId());
-                    notifyDataSetChanged();
+                    refreshData();
                 }
             });
 
             return convertView;
+        }
+
+        void refreshData() {
+            this.alarms = RepeatingAlarmManager.getInstance().getAllAlarms(getContext());
+            notifyDataSetChanged();
         }
     }
 }
