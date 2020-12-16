@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
@@ -38,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setTitle("Notification Manager");
+
+        View view = findViewById(R.id.reset_all);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RepeatingAlarmManager.getInstance().resetAllAlarms(MainActivity.this);
+            }
+        });
 
         FloatingActionButton btn = findViewById(R.id.fab);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -136,6 +145,13 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     RepeatingAlarmManager.getInstance().removeAlarm(MainActivity.this, alarm.getId());
                     refreshData();
+                }
+            });
+
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(MainActivity.this, "alarm id:" + alarm.getId(), Toast.LENGTH_SHORT).show();
                 }
             });
 

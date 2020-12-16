@@ -108,7 +108,6 @@ public class CreateAlarmActivity extends AppCompatActivity {
             }
         });
 
-        timeInterval = TimeUnit.HOURS.toMillis(12);
         SegmentedController timeIntervalSC = findViewById(R.id.time_interval_segment);
         timeIntervalSC.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -129,7 +128,7 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 }
             }
         });
-        timeIntervalSC.check(R.id.half_day);
+        timeIntervalSC.check(R.id.fifteen_mins);
     }
 
     private void updateDateTime() {
@@ -161,7 +160,7 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 timeInterval,
                 alarmNameET.getText().toString(),
                 alarmDescET.getText().toString(),
-                CreateAlarmActivity.class,
+                MainActivity.class,
                 new SuccessFailListener() {
                     @Override
                     public void success(Object object) {

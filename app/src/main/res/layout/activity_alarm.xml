@@ -1,27 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <ListView
-        android:id="@+id/alarm_list"
+    <Button
+        android:id="@+id/reset_all"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_marginTop="@dimen/item_margin_double"
-        android:layout_marginRight="@dimen/item_margin"
-        android:layout_marginBottom="@dimen/item_margin"
-        android:src="@android:drawable/ic_lock_idle_alarm"
-        app:tint="@android:color/white"
-        app:backgroundTint="?colorPrimary" />
-</FrameLayout>
+        android:text="Reset All" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/alarm_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_marginTop="@dimen/item_margin_double"
+            android:layout_marginRight="@dimen/item_margin"
+            android:layout_marginBottom="@dimen/item_margin"
+            android:src="@android:drawable/ic_lock_idle_alarm"
+            app:backgroundTint="?colorPrimary"
+            app:tint="@android:color/white" />
+    </FrameLayout>
+</LinearLayout>

@@ -2,15 +2,13 @@ package com.appstronautstudios.repeatingalarmmanager.managers;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
-import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverDeviceBoot;
 import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverNotification;
 import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 import com.appstronautstudios.repeatingalarmmanager.utils.SuccessFailListener;
@@ -21,9 +19,11 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * https://github.com/Ajeet-Meena/SimpleAlarmManager-Android
@@ -238,10 +238,11 @@ public class RepeatingAlarmManager {
         // create alarm intent and schedule (will be delayed during "doze periods")
         Intent intent = new Intent(context, ReceiverNotification.class);
         intent.putExtra(Constants.ALARM_ID, alarm.getId());
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
+            Log.d(Constants.LOG_KEY, "alarm scheduled starting at: " + new Date(calendar.getTimeInMillis()) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
         }
     }
 
