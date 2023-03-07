@@ -238,7 +238,7 @@ public class RepeatingAlarmManager {
         // create alarm intent and schedule (will be delayed during "doze periods")
         Intent intent = new Intent(context, ReceiverNotification.class);
         intent.putExtra(Constants.ALARM_ID, alarm.getId());
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0|PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
@@ -254,7 +254,7 @@ public class RepeatingAlarmManager {
      */
     private void cancelAlarm(Context context, int id) {
         Intent intent = new Intent(context, ReceiverNotification.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_NO_CREATE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_NO_CREATE|PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (pendingIntent != null && alarmManager != null) {
             alarmManager.cancel(pendingIntent);

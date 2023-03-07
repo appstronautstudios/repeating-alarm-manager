@@ -51,7 +51,7 @@ public class ReceiverNotification extends BroadcastReceiver {
                 activityIntent = new Intent(context, Class.forName(alarm.getActivityClass()));
                 activityIntent.putExtra("notificationClicked", alarmId);
                 activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT|PendingIntent.FLAG_IMMUTABLE);
 
                 // build local notification
                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
