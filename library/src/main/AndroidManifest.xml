@@ -12,6 +12,7 @@
             android:enabled="true" />
         <receiver
             android:name=".receivers.ReceiverDeviceBoot"
+            android:exported="true"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
