@@ -10,7 +10,9 @@
         <!-- receivers -->
         <receiver
             android:name=".receivers.ReceiverNotification"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"/>
         <receiver
             android:name=".receivers.ReceiverDeviceBoot"
             android:exported="true"
