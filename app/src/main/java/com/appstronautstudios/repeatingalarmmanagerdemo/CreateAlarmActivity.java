@@ -137,7 +137,7 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 }
             }
         });
-        timeIntervalSC.check(R.id.fifteen_mins);
+        timeIntervalSC.check(R.id.day);
     }
 
     private void updateDateTime() {
@@ -154,39 +154,53 @@ public class CreateAlarmActivity extends AppCompatActivity {
     }
 
     public void complete() {
-
         Dexter.withContext(CreateAlarmActivity.this)
-                .withPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
+                .withPermission(Manifest.permission.POST_NOTIFICATIONS)
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse response) {
-                        EditText alarmNameET = findViewById(R.id.alarm_name_et);
-                        EditText alarmDescET = findViewById(R.id.alarm_desc_et);
-                        // set up alarm
-                        // default alarm doesn't exist yet
-                        Calendar cal = new GregorianCalendar();
-                        cal.setTime(new Date(alarmDate));
-                        int hour = cal.get(Calendar.HOUR_OF_DAY);
-                        int minute = cal.get(Calendar.MINUTE);
-                        RepeatingAlarmManager.getInstance().addAlarm(CreateAlarmActivity.this,
-                                RepeatingAlarmManager.getInstance().getUnusedAlarmId(CreateAlarmActivity.this),
-                                hour,
-                                minute,
-                                timeInterval,
-                                alarmNameET.getText().toString(),
-                                alarmDescET.getText().toString(),
-                                MainActivity.class,
-                                new SuccessFailListener() {
+                        Dexter.withContext(CreateAlarmActivity.this)
+                                .withPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
+                                .withListener(new PermissionListener() {
                                     @Override
-                                    public void success(Object object) {
-                                        Log.d("ALRM", "success");
+                                    public void onPermissionGranted(PermissionGrantedResponse response) {
+                                        EditText alarmNameET = findViewById(R.id.alarm_name_et);
+                                        EditText alarmDescET = findViewById(R.id.alarm_desc_et);
+                                        // set up alarm
+                                        // default alarm doesn't exist yet
+                                        Calendar cal = new GregorianCalendar();
+                                        cal.setTime(new Date(alarmDate));
+                                        int hour = cal.get(Calendar.HOUR_OF_DAY);
+                                        int minute = cal.get(Calendar.MINUTE);
+                                        RepeatingAlarmManager.getInstance().addAlarm(CreateAlarmActivity.this,
+                                                RepeatingAlarmManager.getInstance().getUnusedAlarmId(CreateAlarmActivity.this),
+                                                hour,
+                                                minute,
+                                                timeInterval,
+                                                alarmNameET.getText().toString(),
+                                                alarmDescET.getText().toString(),
+                                                MainActivity.class,
+                                                new SuccessFailListener() {
+                                                    @Override
+                                                    public void success(Object object) {
+                                                        Log.d("ALRM", "success");
+                                                    }
+                                                    @Override
+                                                    public void failure(Object object) {
+                                                        Log.d("ALRM", "failure" + String.valueOf(object));
+                                                    }
+                                                });
+                                        finish();
                                     }
-
                                     @Override
-                                    public void failure(Object object) {
-                                        Log.d("ALRM", "failure" + String.valueOf(object));
+                                    public void onPermissionDenied(PermissionDeniedResponse response) {
+                                        if (response.isPermanentlyDenied()) {}
                                     }
-                                });
+                                    @Override
+                                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+                                        token.continuePermissionRequest();
+                                    }
+                                }).check();
                         finish();
                     }
 

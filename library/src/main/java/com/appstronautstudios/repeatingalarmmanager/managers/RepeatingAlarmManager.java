@@ -1,12 +1,18 @@
 package com.appstronautstudios.repeatingalarmmanager.managers;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
 import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverNotification;
@@ -17,14 +23,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 /**
  * https://github.com/Ajeet-Meena/SimpleAlarmManager-Android
  * https://github.com/alberto234/schedule-alarm-manager
@@ -220,29 +234,83 @@ public class RepeatingAlarmManager {
      * @param context - context
      * @param alarm   - alarm to schedule
      */
-    private void scheduleRepeatingAlarm(Context context, RepeatingAlarm alarm) {
-        // calculate alarm time based on hour and minute
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
-        calendar.set(Calendar.MINUTE, alarm.getMinute());
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
+    private void scheduleRepeatingAlarm(final Context context, final RepeatingAlarm alarm) {
 
-        // check if alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
-        // already 2pm). To prevent from firing immediately move forward intervals until in future
-        while (Calendar.getInstance().after(calendar)) {
-            calendar.setTimeInMillis(calendar.getTimeInMillis() + alarm.getInterval());
-        }
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Dexter.withContext(context)
+                    .withPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse response) {
+                            // create alarm intent and schedule
+                            // calculate alarm time based on hour and minute
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTimeInMillis(System.currentTimeMillis());
+                            calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
+                            calendar.set(Calendar.MINUTE, alarm.getMinute());
+                            calendar.set(Calendar.SECOND, 0);
+                            calendar.set(Calendar.MILLISECOND, 0);
 
-        // create alarm intent and schedule (will be delayed during "doze periods")
-        Intent intent = new Intent(context, ReceiverNotification.class);
-        intent.putExtra(Constants.ALARM_ID, alarm.getId());
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0|PendingIntent.FLAG_IMMUTABLE);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
-            Log.d(Constants.LOG_KEY, "alarm scheduled starting at: " + new Date(calendar.getTimeInMillis()) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
+                            // check if alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
+                            // already 2pm). To prevent from firing immediately move forward intervals until in future
+                            while (Calendar.getInstance().after(calendar)) {
+                                calendar.setTimeInMillis(calendar.getTimeInMillis() + alarm.getInterval());
+                            }
+
+                            // create alarm intent and schedule (will be delayed during "doze periods")
+                            Intent intent = new Intent(context, ReceiverNotification.class);
+                            intent.putExtra(Constants.ALARM_ID, alarm.getId());
+                            PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0|PendingIntent.FLAG_IMMUTABLE);
+                            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                            if (alarmManager != null) {
+                                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
+                                SimpleDateFormat format = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
+                                String time = "Next notification at: " + format.format(calendar.getTime());
+                                Toast.makeText(context, time, Toast.LENGTH_SHORT).show();
+                                Log.d(Constants.LOG_KEY, "alarm: \'" + alarm.getTitle() + "\' scheduled starting at: " + new Date(calendar.getTimeInMillis()) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
+                            }
+                        }
+
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse response) {
+                            if (response.isPermanentlyDenied()) {
+
+                            }
+                        }
+
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+                            token.continuePermissionRequest();
+                        }
+                    }).check();
+        } else {
+            // create alarm intent and schedule
+            // calculate alarm time based on hour and minute
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
+            calendar.set(Calendar.MINUTE, alarm.getMinute());
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+
+            // check if alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
+            // already 2pm). To prevent from firing immediately move forward intervals until in future
+            while (Calendar.getInstance().after(calendar)) {
+                calendar.setTimeInMillis(calendar.getTimeInMillis() + alarm.getInterval());
+            }
+
+            // create alarm intent and schedule (will be delayed during "doze periods")
+            Intent intent = new Intent(context, ReceiverNotification.class);
+            intent.putExtra(Constants.ALARM_ID, alarm.getId());
+            PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0|PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null) {
+                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
+                SimpleDateFormat format = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
+                String time = "Next notification at: " + format.format(calendar.getTime());
+                Toast.makeText(context, time, Toast.LENGTH_SHORT).show();
+                Log.d(Constants.LOG_KEY, "alarm: \'" + alarm.getTitle() + "\' scheduled starting at: " + new Date(calendar.getTimeInMillis()) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
+            }
         }
     }
 
