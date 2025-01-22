@@ -1,17 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 33
-
-
+    namespace 'com.appstronautstudios.repeatingalarmmanager'
+    compileSdkVersion 34
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 33
-        versionCode 5
-        versionName "0.1.10"
+        minSdkVersion 21
+        targetSdkVersion 34
         consumerProguardFiles 'consumer-rules.pro'
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -23,6 +19,6 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.karumi:dexter:6.2.2'
 }

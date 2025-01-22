@@ -1,6 +1,5 @@
 package com.appstronautstudios.repeatingalarmmanagerdemo;
 
-import android.Manifest;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,14 +9,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.PermissionToken;
-import com.karumi.dexter.listener.PermissionDeniedResponse;
-import com.karumi.dexter.listener.PermissionGrantedResponse;
-import com.karumi.dexter.listener.PermissionRequest;
-import com.karumi.dexter.listener.single.PermissionListener;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.appstronautstudios.library.SegmentedController;
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
@@ -30,9 +24,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 
 public class CreateAlarmActivity extends AppCompatActivity {
 
@@ -59,7 +50,6 @@ public class CreateAlarmActivity extends AppCompatActivity {
         }
 
         setTitle("Create Notification");
-
 
         final TextView dateTV = findViewById(R.id.date_et);
         final TextView timeTV = findViewById(R.id.time_et);
@@ -121,19 +111,14 @@ public class CreateAlarmActivity extends AppCompatActivity {
         timeIntervalSC.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                switch (i) {
-                    case R.id.fifteen_mins:
-                        timeInterval = TimeUnit.MINUTES.toMillis(15);
-                        break;
-                    case R.id.half_day:
-                        timeInterval = TimeUnit.HOURS.toMillis(12);
-                        break;
-                    case R.id.day:
-                        timeInterval = TimeUnit.HOURS.toMillis(24);
-                        break;
-                    case R.id.week:
-                        timeInterval = TimeUnit.DAYS.toMillis(7);
-                        break;
+                if (i == R.id.fifteen_mins) {
+                    timeInterval = TimeUnit.MINUTES.toMillis(15);
+                } else if (i == R.id.half_day) {
+                    timeInterval = TimeUnit.HOURS.toMillis(12);
+                } else if (i == R.id.day) {
+                    timeInterval = TimeUnit.HOURS.toMillis(24);
+                } else if (i == R.id.week) {
+                    timeInterval = TimeUnit.DAYS.toMillis(7);
                 }
             }
         });
@@ -154,84 +139,48 @@ public class CreateAlarmActivity extends AppCompatActivity {
     }
 
     public void complete() {
-        Dexter.withContext(CreateAlarmActivity.this)
-                .withPermission(Manifest.permission.POST_NOTIFICATIONS)
-                .withListener(new PermissionListener() {
+        EditText alarmNameET = findViewById(R.id.alarm_name_et);
+        EditText alarmDescET = findViewById(R.id.alarm_desc_et);
+        // set up alarm
+        // default alarm doesn't exist yet
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(new Date(alarmDate));
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int minute = cal.get(Calendar.MINUTE);
+        RepeatingAlarmManager.getInstance().addAlarm(CreateAlarmActivity.this,
+                RepeatingAlarmManager.getInstance().getUnusedAlarmId(CreateAlarmActivity.this),
+                hour,
+                minute,
+                timeInterval,
+                alarmNameET.getText().toString(),
+                alarmDescET.getText().toString(),
+                MainActivity.class,
+                new SuccessFailListener() {
                     @Override
-                    public void onPermissionGranted(PermissionGrantedResponse response) {
-                        Dexter.withContext(CreateAlarmActivity.this)
-                                .withPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
-                                .withListener(new PermissionListener() {
-                                    @Override
-                                    public void onPermissionGranted(PermissionGrantedResponse response) {
-                                        EditText alarmNameET = findViewById(R.id.alarm_name_et);
-                                        EditText alarmDescET = findViewById(R.id.alarm_desc_et);
-                                        // set up alarm
-                                        // default alarm doesn't exist yet
-                                        Calendar cal = new GregorianCalendar();
-                                        cal.setTime(new Date(alarmDate));
-                                        int hour = cal.get(Calendar.HOUR_OF_DAY);
-                                        int minute = cal.get(Calendar.MINUTE);
-                                        RepeatingAlarmManager.getInstance().addAlarm(CreateAlarmActivity.this,
-                                                RepeatingAlarmManager.getInstance().getUnusedAlarmId(CreateAlarmActivity.this),
-                                                hour,
-                                                minute,
-                                                timeInterval,
-                                                alarmNameET.getText().toString(),
-                                                alarmDescET.getText().toString(),
-                                                MainActivity.class,
-                                                new SuccessFailListener() {
-                                                    @Override
-                                                    public void success(Object object) {
-                                                        Log.d("ALRM", "success");
-                                                    }
-                                                    @Override
-                                                    public void failure(Object object) {
-                                                        Log.d("ALRM", "failure" + String.valueOf(object));
-                                                    }
-                                                });
-                                        finish();
-                                    }
-                                    @Override
-                                    public void onPermissionDenied(PermissionDeniedResponse response) {
-                                        if (response.isPermanentlyDenied()) {}
-                                    }
-                                    @Override
-                                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-                                        token.continuePermissionRequest();
-                                    }
-                                }).check();
-                        finish();
+                    public void success(Object object) {
+                        Log.d("ALRM", "success");
                     }
 
                     @Override
-                    public void onPermissionDenied(PermissionDeniedResponse response) {
-                        if (response.isPermanentlyDenied()) {
-
-                        }
+                    public void failure(Object object) {
+                        Log.d("ALRM", "failure" + String.valueOf(object));
                     }
-
-                    @Override
-                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-                        token.continuePermissionRequest();
-                    }
-                }).check();
+                });
+        finish();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.action_save_log: {
-                complete();
-                return true;
-            }
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(menuItem);
+        if (menuItem.getItemId() == R.id.action_save_log) {
+            complete();
+            return true;
+        } else if (menuItem.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        } else {
+            // If we got here, the user's action was not recognized.
+            // Invoke the superclass to handle it.
+            return super.onOptionsItemSelected(menuItem);
         }
     }
 }

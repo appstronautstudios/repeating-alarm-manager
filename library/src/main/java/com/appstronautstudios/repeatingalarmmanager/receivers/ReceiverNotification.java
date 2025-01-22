@@ -10,12 +10,12 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
 import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 public class ReceiverNotification extends BroadcastReceiver {
 
@@ -51,14 +51,14 @@ public class ReceiverNotification extends BroadcastReceiver {
                 activityIntent = new Intent(context, Class.forName(alarm.getActivityClass()));
                 activityIntent.putExtra("notificationClicked", alarmId);
                 activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT|PendingIntent.FLAG_IMMUTABLE);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
                 // build local notification
                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
                         .setContentTitle(alarm.getTitle())
                         .setContentText(alarm.getDescription())
                         .setContentIntent(pendingIntent)
-                        .setSmallIcon(android.R.drawable.alert_light_frame)
+                        .setSmallIcon(context.getApplicationInfo().icon)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setGroup(GROUP)
                         .setAutoCancel(true);

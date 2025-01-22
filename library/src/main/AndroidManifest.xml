@@ -12,14 +12,24 @@
             android:name=".receivers.ReceiverNotification"
             android:enabled="true"
             android:exported="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"/>
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED" />
         <receiver
             android:name=".receivers.ReceiverDeviceBoot"
-            android:exported="true"
-            android:enabled="true">
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".receivers.ReceiverTimeChange"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_CHANGED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_TICK" />
             </intent-filter>
         </receiver>
     </application>
