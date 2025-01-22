@@ -65,9 +65,14 @@ public class ReceiverNotification extends BroadcastReceiver {
 
                 // notify
                 NotificationManagerCompat.from(context).notify(alarmId, notificationBuilder.build());
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | SecurityException e) {
                 e.printStackTrace();
             }
+
+            // now that we're using idle proof alarms they cannot repeat on their own. This means
+            // every time we catch an alarm in this receiver we also have to reschedule it. To
+            // keep things simple we're going to reschedule all alarms
+            RepeatingAlarmManager.getInstance().resetAllAlarms(context);
         }
     }
 }

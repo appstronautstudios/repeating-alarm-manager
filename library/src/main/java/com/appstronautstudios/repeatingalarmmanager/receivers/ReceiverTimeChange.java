@@ -24,7 +24,6 @@ public class ReceiverTimeChange extends BroadcastReceiver {
                 default:
                     break;
             }
-            RepeatingAlarmManager.getInstance().resetAllAlarms(context);
         }
     }
 }

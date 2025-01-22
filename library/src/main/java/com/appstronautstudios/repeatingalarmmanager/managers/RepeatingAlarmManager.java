@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
 import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverNotification;
@@ -125,7 +124,7 @@ public class RepeatingAlarmManager {
 
     public ArrayList<RepeatingAlarm> getAllAlarms(Context context) {
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(context);
-        String alarmsPref = preferenceManager.getString(Constants.PREF_KEY_ALARMS, "");
+        String alarmsPref = preferenceManager.getString(Constants.PREF_KEY_ALARMS, "[]");
 
         // convert string json to ArrayList of alarms and return
         ArrayList<RepeatingAlarm> repeatingAlarms = new ArrayList<>();
@@ -288,10 +287,8 @@ public class RepeatingAlarmManager {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0 | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarm.getInterval(), alarmIntent);
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
             SimpleDateFormat format = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
-            String time = "Next notification at: " + format.format(calendar.getTime());
-            Toast.makeText(context, time, Toast.LENGTH_SHORT).show();
             Log.d(Constants.LOG_KEY, "alarm: \'" + alarm.getTitle() + "\' scheduled starting at: " + new Date(calendar.getTimeInMillis()) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
         }
     }
