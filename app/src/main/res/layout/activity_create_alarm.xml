@@ -6,7 +6,6 @@
     android:orientation="vertical">
 
     <TextView
-        fontPath="Oswald-Regular.ttf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/item_margin"
@@ -34,7 +33,6 @@
         android:scrollbars="vertical" />
 
     <TextView
-        fontPath="Oswald-Regular.ttf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/item_margin"
@@ -68,7 +66,6 @@
     </LinearLayout>
 
     <TextView
-        fontPath="Oswald-Regular.ttf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/item_margin"
@@ -118,5 +115,4 @@
             android:minHeight="0dp"
             android:text="7d" />
     </com.appstronautstudios.library.SegmentedController>
-
 </LinearLayout>
