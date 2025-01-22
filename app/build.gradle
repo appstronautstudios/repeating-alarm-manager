@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace 'com.appstronautstudios.repeatingalarmmanagerdemo'
-    compileSdkVersion 34
+    compileSdk 34
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 34
