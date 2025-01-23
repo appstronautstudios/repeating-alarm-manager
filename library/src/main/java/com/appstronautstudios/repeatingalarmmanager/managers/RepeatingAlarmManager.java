@@ -26,9 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
@@ -59,6 +57,31 @@ public class RepeatingAlarmManager {
      * add alarm to managed set and schedule it
      *
      * @param context     - context
+     * @param hour        - hour of date to set alarm (0-24)
+     * @param minute      - minute of hour to set alarm (0-60)
+     * @param interval    - MS interval to repeat alarm over
+     * @param title       - title for notification
+     * @param description - detail text for notification
+     * @param activity    - activity class to be opened on notification click
+     * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
+     */
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, Class activity, SuccessFailListener listener) {
+        addAlarm(
+                context,
+                getUnusedAlarmId(context),
+                hour,
+                minute,
+                interval,
+                title,
+                description,
+                activity,
+                listener);
+    }
+
+    /**
+     * add alarm to managed set and schedule it
+     *
+     * @param context     - context
      * @param id          - alarm id. Will override if already exists
      * @param hour        - hour of date to set alarm (0-24)
      * @param minute      - minute of hour to set alarm (0-60)
@@ -66,7 +89,7 @@ public class RepeatingAlarmManager {
      * @param title       - title for notification
      * @param description - detail text for notification
      * @param activity    - activity class to be opened on notification click
-     * @param listener    - success/fail listener for add operation
+     * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
     public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, Class activity, SuccessFailListener listener) {
         // get alarms and check which ids are in use
@@ -103,7 +126,7 @@ public class RepeatingAlarmManager {
         addAlarmPref(context, addedAlarm);
 
         if (listener != null) {
-            listener.success(null);
+            listener.success(addedAlarm.getNextTriggerTimestamp());
         }
     }
 
@@ -187,39 +210,38 @@ public class RepeatingAlarmManager {
     /**
      * activate managed alarm if it exists.
      *
-     * @param context - context
-     * @param id      - id of alarm to active
-     * @return - true if activated, false otherwise (e.g. no alarm with id found)
+     * @param context  - context
+     * @param id       - id of alarm to active
+     * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
-    public boolean activateAlarm(Context context, int id) {
+    public void activateAlarm(Context context, int id, SuccessFailListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
         if (alarm != null) {
             alarm.setActive(true);
             scheduleRepeatingAlarmWithPermission(context, alarm);
             updateAlarm(context, alarm);
-            return true;
+            if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
         } else {
-            return false;
+            if (listener != null) listener.failure("Failed to find alarm with ID: " + id);
         }
     }
 
     /**
      * deactivate managed alarm if it exists.
      *
-     * @param context - context
-     * @param id      - id of alarm to deactivate
-     * @return - true if deactivated, false otherwise (e.g. no alarm with id found)
+     * @param context  - context
+     * @param id       - id of alarm to deactivate
+     * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
-    public boolean deactivateAlarm(Context context, int id) {
+    public void deactivateAlarm(Context context, int id, SuccessFailListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
         if (alarm != null) {
             alarm.setActive(false);
             cancelAlarm(context, id);
-
             updateAlarm(context, alarm);
-            return true;
+            if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
         } else {
-            return false;
+            if (listener != null) listener.failure("Failed to find alarm with ID: " + id);
         }
     }
 
@@ -266,30 +288,15 @@ public class RepeatingAlarmManager {
      * @param alarm   - alarm to schedule
      */
     private void scheduleRepeatingAlarm(final Context context, final RepeatingAlarm alarm) {
-        // create alarm intent and schedule
-        // calculate alarm time based on hour and minute
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, alarm.getHour());
-        calendar.set(Calendar.MINUTE, alarm.getMinute());
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        // check if alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
-        // already 2pm). To prevent from firing immediately move forward intervals until in future
-        while (Calendar.getInstance().after(calendar)) {
-            calendar.setTimeInMillis(calendar.getTimeInMillis() + alarm.getInterval());
-        }
-
         // create alarm intent and schedule (will be delayed during "doze periods")
         Intent intent = new Intent(context, ReceiverNotification.class);
         intent.putExtra(Constants.ALARM_ID, alarm.getId());
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, alarm.getId(), intent, 0 | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            SimpleDateFormat format = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
-            Log.d(Constants.LOG_KEY, "alarm: \'" + alarm.getTitle() + "\' scheduled starting at: " + new Date(calendar.getTimeInMillis()) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
+            long nextAlarmTimestamp = alarm.getNextTriggerTimestamp();
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextAlarmTimestamp, alarmIntent);
+            Log.d(Constants.LOG_KEY, "alarm: \'" + alarm.getTitle() + "\' scheduled starting at: " + new Date(nextAlarmTimestamp) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
         }
     }
 

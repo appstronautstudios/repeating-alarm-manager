@@ -5,6 +5,10 @@ import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Calendar;
+
 public class RepeatingAlarm {
     private int id; // ANDROID ALARM IDS ARE INTS
     private int hour;
@@ -92,5 +96,24 @@ public class RepeatingAlarm {
 
     public String getHumanReadableTime() {
         return String.format("%02d", getHour()) + ":" + String.format("%02d", getMinute());
+    }
+
+    public long getNextTriggerTimestamp() {
+        // create alarm intent and schedule
+        // calculate alarm time based on hour and minute
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, getHour());
+        calendar.set(Calendar.MINUTE, getMinute());
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        // check if alarm trigger is in past (e.g. you set it to repeat every day at 12pm but it is
+        // already 2pm). To prevent from firing immediately move forward intervals until in future
+        while (Calendar.getInstance().after(calendar)) {
+            calendar.setTimeInMillis(calendar.getTimeInMillis() + getInterval());
+        }
+
+        return calendar.getTimeInMillis();
     }
 }

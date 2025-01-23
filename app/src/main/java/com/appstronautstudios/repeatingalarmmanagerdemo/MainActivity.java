@@ -14,16 +14,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
+import com.appstronautstudios.repeatingalarmmanager.utils.SuccessFailListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -94,11 +95,6 @@ public class MainActivity extends AppCompatActivity {
             return alarms.get(i);
         }
 
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
         @NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -132,9 +128,33 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
-                        RepeatingAlarmManager.getInstance().activateAlarm(MainActivity.this, alarm.getId());
+                        RepeatingAlarmManager.getInstance().activateAlarm(MainActivity.this, alarm.getId(), new SuccessFailListener() {
+                            @Override
+                            public void success(Object object) {
+                                long nextAlarm = (long) object;
+                                long millisUntil = nextAlarm - System.currentTimeMillis();
+                                long minutes = (millisUntil / (1000 * 60)) % 60;
+                                long hours = (millisUntil / (1000 * 60 * 60));
+                                Toast.makeText(MainActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void failure(Object object) {
+                                Toast.makeText(MainActivity.this, (String) object, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     } else {
-                        RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId());
+                        RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId(), new SuccessFailListener() {
+                            @Override
+                            public void success(Object object) {
+                                Toast.makeText(MainActivity.this, "Alarm deactivated", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void failure(Object object) {
+                                Toast.makeText(MainActivity.this, (String) object, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                     refreshData();
                 }

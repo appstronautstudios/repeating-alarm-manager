@@ -1,7 +1,6 @@
 package com.appstronautstudios.repeatingalarmmanagerdemo;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -9,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -148,7 +148,6 @@ public class CreateAlarmActivity extends AppCompatActivity {
         int hour = cal.get(Calendar.HOUR_OF_DAY);
         int minute = cal.get(Calendar.MINUTE);
         RepeatingAlarmManager.getInstance().addAlarm(CreateAlarmActivity.this,
-                RepeatingAlarmManager.getInstance().getUnusedAlarmId(CreateAlarmActivity.this),
                 hour,
                 minute,
                 timeInterval,
@@ -158,12 +157,16 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 new SuccessFailListener() {
                     @Override
                     public void success(Object object) {
-                        Log.d("ALRM", "success");
+                        long nextAlarm = (long) object;
+                        long millisUntil = nextAlarm - System.currentTimeMillis();
+                        long minutes = (millisUntil / (1000 * 60)) % 60;
+                        long hours = (millisUntil / (1000 * 60 * 60));
+                        Toast.makeText(CreateAlarmActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void failure(Object object) {
-                        Log.d("ALRM", "failure" + String.valueOf(object));
+                        Toast.makeText(CreateAlarmActivity.this, (String) object, Toast.LENGTH_SHORT).show();
                     }
                 });
         finish();
