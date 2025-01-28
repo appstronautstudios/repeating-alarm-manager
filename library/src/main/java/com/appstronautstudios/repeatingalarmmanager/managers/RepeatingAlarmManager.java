@@ -98,8 +98,8 @@ public class RepeatingAlarmManager {
                 minute,
                 interval,
                 title,
-                startingState,
                 description,
+                startingState,
                 activity,
                 listener);
     }
@@ -117,7 +117,7 @@ public class RepeatingAlarmManager {
      * @param activity    - activity class to be opened on notification click
      * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, boolean startingState, String description, Class activity, SuccessFailListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, SuccessFailListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
