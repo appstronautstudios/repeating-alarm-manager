@@ -40,6 +40,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class RepeatingAlarmManager {
 
+    public static final int ALARM_DEFAULT_ID = 1;
+
     private static final RepeatingAlarmManager INSTANCE = new RepeatingAlarmManager();
     private static final int ALARM_CAP = 100;
 
