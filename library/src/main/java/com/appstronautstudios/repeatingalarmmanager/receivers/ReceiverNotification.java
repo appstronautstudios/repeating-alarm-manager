@@ -1,5 +1,9 @@
 package com.appstronautstudios.repeatingalarmmanager.receivers;
 
+import static com.appstronautstudios.repeatingalarmmanager.utils.Constants.NOTIFICATION_IS_DEFAULT;
+import static com.appstronautstudios.repeatingalarmmanager.utils.Constants.NOTIFICATION_TRACKER_ACTION;
+import static com.appstronautstudios.repeatingalarmmanager.utils.Constants.NOTIFICATION_TRACKER_PERMISSION;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -19,8 +23,6 @@ import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 
 public class ReceiverNotification extends BroadcastReceiver {
 
-    public static final String NOTIFICATION_TRACKER_ACTION = "RAM_NOTIFICATION_SENT";
-    public static final String NOTIFICATION_IS_DEFAULT = "RAM_IS_DEFAULT";
     public static final String CHANNEL_ID = "repeating_alarm_manager";
     public static final String GROUP = "generic_group";
 
@@ -71,7 +73,7 @@ public class ReceiverNotification extends BroadcastReceiver {
                 // broadcast for tracking
                 Intent broadcastIntent = new Intent(NOTIFICATION_TRACKER_ACTION);
                 broadcastIntent.putExtra(NOTIFICATION_IS_DEFAULT, alarmId == RepeatingAlarmManager.ALARM_DEFAULT_ID);
-                context.sendBroadcast(broadcastIntent);
+                context.sendBroadcast(broadcastIntent, NOTIFICATION_TRACKER_PERMISSION);
             } catch (ClassNotFoundException | SecurityException e) {
                 e.printStackTrace();
             }
