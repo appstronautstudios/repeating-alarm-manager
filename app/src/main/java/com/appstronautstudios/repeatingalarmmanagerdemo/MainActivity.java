@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
-import com.appstronautstudios.repeatingalarmmanager.utils.SuccessFailListener;
+import com.appstronautstudios.repeatingalarmmanager.utils.AlarmUpdateListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -128,31 +128,30 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
-                        RepeatingAlarmManager.getInstance().activateAlarm(MainActivity.this, alarm.getId(), new SuccessFailListener() {
+                        RepeatingAlarmManager.getInstance().activateAlarm(MainActivity.this, alarm.getId(), new AlarmUpdateListener() {
                             @Override
-                            public void success(Object object) {
-                                long nextAlarm = (long) object;
-                                long millisUntil = nextAlarm - System.currentTimeMillis();
+                            public void success(long nextAlarmTimestamp) {
+                                long millisUntil = nextAlarmTimestamp - System.currentTimeMillis();
                                 long minutes = (millisUntil / (1000 * 60)) % 60;
                                 long hours = (millisUntil / (1000 * 60 * 60));
                                 Toast.makeText(MainActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
-                            public void failure(Object object) {
-                                Toast.makeText(MainActivity.this, (String) object, Toast.LENGTH_SHORT).show();
+                            public void failure(String errorMessage) {
+                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                             }
                         });
                     } else {
-                        RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId(), new SuccessFailListener() {
+                        RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId(), new AlarmUpdateListener() {
                             @Override
-                            public void success(Object object) {
+                            public void success(long nextAlarmTimestamp) {
                                 Toast.makeText(MainActivity.this, "Alarm deactivated", Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
-                            public void failure(Object object) {
-                                Toast.makeText(MainActivity.this, (String) object, Toast.LENGTH_SHORT).show();
+                            public void failure(String errorMessage) {
+                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }

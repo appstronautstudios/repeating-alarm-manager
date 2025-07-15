@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">library</string>
+    <string name="add_fail_too_many">Too many alarms. Please remove one and try again</string>
+    <string name="add_fail_invalid_id">Alarm id must be between 1–100</string>
+    <string name="schedule_fail_title">Permission required</string>
+    <string name="schedule_fail_permission_required">Notification permissions are required to schedule an alarm. Please enable notifications in your settings app.</string>
+    <string name="alarm_update_failed_no_id">Failed to find alarm with ID: </string>
 </resources>

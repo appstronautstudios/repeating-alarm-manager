@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.appstronautstudios.library.SegmentedController;
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
-import com.appstronautstudios.repeatingalarmmanager.utils.SuccessFailListener;
+import com.appstronautstudios.repeatingalarmmanager.utils.AlarmUpdateListener;
 import com.appstronautstudios.repeatingalarmmanagerdemo.utils.Utils;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
@@ -154,19 +154,18 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 alarmNameET.getText().toString(),
                 alarmDescET.getText().toString(),
                 MainActivity.class,
-                new SuccessFailListener() {
+                new AlarmUpdateListener() {
                     @Override
-                    public void success(Object object) {
-                        long nextAlarm = (long) object;
-                        long millisUntil = nextAlarm - System.currentTimeMillis();
+                    public void success(long nextAlarmTimestamp) {
+                        long millisUntil = nextAlarmTimestamp - System.currentTimeMillis();
                         long minutes = (millisUntil / (1000 * 60)) % 60;
                         long hours = (millisUntil / (1000 * 60 * 60));
                         Toast.makeText(CreateAlarmActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void failure(Object object) {
-                        Toast.makeText(CreateAlarmActivity.this, (String) object, Toast.LENGTH_SHORT).show();
+                    public void failure(String errorMessage) {
+                        Toast.makeText(CreateAlarmActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
         finish();

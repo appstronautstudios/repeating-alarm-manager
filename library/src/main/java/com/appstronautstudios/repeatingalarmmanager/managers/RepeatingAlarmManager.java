@@ -2,19 +2,18 @@ package com.appstronautstudios.repeatingalarmmanager.managers;
 
 import android.Manifest;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
+import com.appstronautstudios.repeatingalarmmanager.R;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
 import com.appstronautstudios.repeatingalarmmanager.receivers.ReceiverNotification;
+import com.appstronautstudios.repeatingalarmmanager.utils.AlarmUpdateListener;
 import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
-import com.appstronautstudios.repeatingalarmmanager.utils.SuccessFailListener;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -27,11 +26,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * https://github.com/Ajeet-Meena/SimpleAlarmManager-Android
@@ -67,7 +64,7 @@ public class RepeatingAlarmManager {
      * @param activity    - activity class to be opened on notification click
      * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, Class activity, SuccessFailListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, Class activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 hour,
@@ -92,7 +89,7 @@ public class RepeatingAlarmManager {
      * @param activity    - activity class to be opened on notification click
      * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, SuccessFailListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 getUnusedAlarmId(context),
@@ -119,7 +116,7 @@ public class RepeatingAlarmManager {
      * @param activity    - activity class to be opened on notification click
      * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, SuccessFailListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, AlarmUpdateListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -130,7 +127,7 @@ public class RepeatingAlarmManager {
         // check if we're over the cap
         if (usedIds.size() >= ALARM_CAP) {
             if (listener != null) {
-                listener.failure("Too many alarms. Please remove one and try again");
+                listener.failure(context.getString(R.string.add_fail_too_many));
             }
             return;
         }
@@ -138,7 +135,7 @@ public class RepeatingAlarmManager {
         // check if id is valid
         if (id <= 0 || id > ALARM_CAP) {
             if (listener != null) {
-                listener.failure("Alarm id must be between 1-100");
+                listener.failure(context.getString(R.string.add_fail_invalid_id));
             }
             return;
         }
@@ -148,17 +145,29 @@ public class RepeatingAlarmManager {
             removeAlarm(context, id);
         }
 
-        // create alarm object and add it to prefs
+        // create alarm object
         RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity.getName(), startingState);
-        addAlarmPref(context, addedAlarm);
 
         // if its supposed to start active attempt to schedule
         if (startingState) {
-            scheduleRepeatingAlarmWithPermission(context, addedAlarm);
-        }
+            scheduleRepeatingAlarmWithPermission(context, addedAlarm, new AlarmUpdateListener() {
+                @Override
+                public void success(long nextAlarmTimestamp) {
+                    // successfully scheduled. Add to prefs and success out
+                    addAlarmPref(context, addedAlarm);
+                    if (listener != null) listener.success(addedAlarm.getNextTriggerTimestamp());
+                }
 
-        if (listener != null) {
-            listener.success(addedAlarm.getNextTriggerTimestamp());
+                @Override
+                public void failure(String errorMessage) {
+                    if (listener != null)
+                        listener.failure(context.getString(R.string.schedule_fail_permission_required));
+                }
+            });
+        } else {
+            // successfully scheduled. Add to prefs and success out
+            addAlarmPref(context, addedAlarm);
+            if (listener != null) listener.success(addedAlarm.getNextTriggerTimestamp());
         }
     }
 
@@ -246,7 +255,7 @@ public class RepeatingAlarmManager {
      * @param id       - id of alarm to active
      * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
-    public void setAlarmActive(Context context, int id, boolean active, SuccessFailListener listener) {
+    public void setAlarmActive(Context context, int id, boolean active, AlarmUpdateListener listener) {
         if (active) {
             activateAlarm(context, id, listener);
         } else {
@@ -261,15 +270,15 @@ public class RepeatingAlarmManager {
      * @param id       - id of alarm to active
      * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
-    public void activateAlarm(Context context, int id, SuccessFailListener listener) {
+    public void activateAlarm(Context context, int id, AlarmUpdateListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
         if (alarm != null) {
             alarm.setActive(true);
-            scheduleRepeatingAlarmWithPermission(context, alarm);
+            scheduleRepeatingAlarmWithPermission(context, alarm, listener);
             updateAlarm(context, alarm);
             if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
         } else {
-            if (listener != null) listener.failure("Failed to find alarm with ID: " + id);
+            listener.failure(context.getString(R.string.alarm_update_failed_no_id) + id);
         }
     }
 
@@ -280,7 +289,7 @@ public class RepeatingAlarmManager {
      * @param id       - id of alarm to deactivate
      * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
-    public void deactivateAlarm(Context context, int id, SuccessFailListener listener) {
+    public void deactivateAlarm(Context context, int id, AlarmUpdateListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
         if (alarm != null) {
             alarm.setActive(false);
@@ -288,7 +297,8 @@ public class RepeatingAlarmManager {
             updateAlarm(context, alarm);
             if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
         } else {
-            if (listener != null) listener.failure("Failed to find alarm with ID: " + id);
+            if (listener != null)
+                listener.failure(context.getString(R.string.alarm_update_failed_no_id) + id);
         }
     }
 
@@ -298,7 +308,7 @@ public class RepeatingAlarmManager {
      * @param context - context
      * @param alarm   - alarm to schedule
      */
-    private void scheduleRepeatingAlarmWithPermission(final Context context, final RepeatingAlarm alarm) {
+    private void scheduleRepeatingAlarmWithPermission(final Context context, final RepeatingAlarm alarm, AlarmUpdateListener listener) {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Dexter.withContext(context)
                     .withPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -306,25 +316,27 @@ public class RepeatingAlarmManager {
                         @Override
                         public void onPermissionGranted(PermissionGrantedResponse response) {
                             scheduleRepeatingAlarm(context, alarm);
+                            if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
                         }
 
                         @Override
                         public void onPermissionDenied(PermissionDeniedResponse response) {
                             if (response.isPermanentlyDenied()) {
-                                new AlertDialog.Builder(context)
-                                        .setTitle("Permission required")
-                                        .setMessage("Notification permissions are required to schedule an alarm.")
-                                        .create();
+                                if (listener != null)
+                                    listener.failure(context.getString(R.string.schedule_fail_permission_required));
                             }
                         }
 
                         @Override
                         public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
                             token.continuePermissionRequest();
+                            if (listener != null)
+                                listener.failure(context.getString(R.string.schedule_fail_permission_required));
                         }
                     }).check();
         } else {
             scheduleRepeatingAlarm(context, alarm);
+            if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
         }
     }
 
@@ -343,7 +355,6 @@ public class RepeatingAlarmManager {
         if (alarmManager != null) {
             long nextAlarmTimestamp = alarm.getNextTriggerTimestamp();
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextAlarmTimestamp, alarmIntent);
-            Log.d(Constants.LOG_KEY, "alarm: \'" + alarm.getTitle() + "\' scheduled starting at: " + new Date(nextAlarmTimestamp) + " and repeating every: " + TimeUnit.MILLISECONDS.toMinutes(alarm.getInterval()) + "m");
         }
     }
 
@@ -391,7 +402,7 @@ public class RepeatingAlarmManager {
         for (RepeatingAlarm alarm : repeatingAlarms) {
             cancelAlarm(context, alarm.getId());
             if (alarm.isActive()) {
-                scheduleRepeatingAlarmWithPermission(context, alarm);
+                scheduleRepeatingAlarmWithPermission(context, alarm, null);
             }
         }
     }
