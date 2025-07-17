@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.appstronautstudios.library.SegmentedController;
@@ -160,15 +161,19 @@ public class CreateAlarmActivity extends AppCompatActivity {
                         long millisUntil = nextAlarmTimestamp - System.currentTimeMillis();
                         long minutes = (millisUntil / (1000 * 60)) % 60;
                         long hours = (millisUntil / (1000 * 60 * 60));
-                        Toast.makeText(CreateAlarmActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CreateAlarmActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_LONG).show();
+                        finish();
                     }
 
                     @Override
                     public void failure(String errorMessage) {
-                        Toast.makeText(CreateAlarmActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                        new AlertDialog.Builder(CreateAlarmActivity.this)
+                                .setTitle("Error")
+                                .setMessage(errorMessage)
+                                .setPositiveButton("OK", null)
+                                .show();
                     }
                 });
-        finish();
     }
 
     @Override

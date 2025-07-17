@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.appstronautstudios.repeatingalarmmanager.managers.RepeatingAlarmManager;
@@ -134,24 +135,32 @@ public class MainActivity extends AppCompatActivity {
                                 long millisUntil = nextAlarmTimestamp - System.currentTimeMillis();
                                 long minutes = (millisUntil / (1000 * 60)) % 60;
                                 long hours = (millisUntil / (1000 * 60 * 60));
-                                Toast.makeText(MainActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Next alarm in: " + hours + " hours and " + minutes + " minutes", Toast.LENGTH_LONG).show();
                             }
 
                             @Override
                             public void failure(String errorMessage) {
-                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Error")
+                                        .setMessage(errorMessage)
+                                        .setPositiveButton("OK", null)
+                                        .show();
                             }
                         });
                     } else {
                         RepeatingAlarmManager.getInstance().deactivateAlarm(MainActivity.this, alarm.getId(), new AlarmUpdateListener() {
                             @Override
                             public void success(long nextAlarmTimestamp) {
-                                Toast.makeText(MainActivity.this, "Alarm deactivated", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Alarm deactivated", Toast.LENGTH_LONG).show();
                             }
 
                             @Override
                             public void failure(String errorMessage) {
-                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Error")
+                                        .setMessage(errorMessage)
+                                        .setPositiveButton("OK", null)
+                                        .show();
                             }
                         });
                     }
@@ -170,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(MainActivity.this, "alarm id:" + alarm.getId(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "alarm id:" + alarm.getId(), Toast.LENGTH_LONG).show();
                 }
             });
 

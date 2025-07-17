@@ -273,10 +273,21 @@ public class RepeatingAlarmManager {
     public void activateAlarm(Context context, int id, AlarmUpdateListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
         if (alarm != null) {
-            alarm.setActive(true);
-            scheduleRepeatingAlarmWithPermission(context, alarm, listener);
-            updateAlarm(context, alarm);
-            if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
+            scheduleRepeatingAlarmWithPermission(context, alarm, new AlarmUpdateListener() {
+                @Override
+                public void success(long nextAlarmTimestamp) {
+                    // successfully scheduled. Update prefs and success out
+                    alarm.setActive(true);
+                    updateAlarm(context, alarm);
+                    if (listener != null) listener.success(alarm.getNextTriggerTimestamp());
+                }
+
+                @Override
+                public void failure(String errorMessage) {
+                    if (listener != null)
+                        listener.failure(context.getString(R.string.schedule_fail_permission_required));
+                }
+            });
         } else {
             listener.failure(context.getString(R.string.alarm_update_failed_no_id) + id);
         }
@@ -309,6 +320,10 @@ public class RepeatingAlarmManager {
      * @param alarm   - alarm to schedule
      */
     private void scheduleRepeatingAlarmWithPermission(final Context context, final RepeatingAlarm alarm, AlarmUpdateListener listener) {
+        // scheduling inexact alarms does NOT require permissions but as of android 33 notifying the
+        // user does. Since you cannot request permissions in a broadcast context we do it here
+        // before they are even scheduled. This also means that users cannot disable notifications
+        // through the settings app for Android versions lower than sdk 33
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Dexter.withContext(context)
                     .withPermission(Manifest.permission.POST_NOTIFICATIONS)
