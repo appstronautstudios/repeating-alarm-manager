@@ -337,16 +337,15 @@ public class RepeatingAlarmManager {
                         @Override
                         public void onPermissionDenied(PermissionDeniedResponse response) {
                             if (response.isPermanentlyDenied()) {
-                                if (listener != null)
-                                    listener.failure(context.getString(R.string.schedule_fail_permission_required));
+                                // don't do anything special for this
                             }
+                            if (listener != null)
+                                listener.failure(context.getString(R.string.schedule_fail_permission_required));
                         }
 
                         @Override
                         public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
                             token.continuePermissionRequest();
-                            if (listener != null)
-                                listener.failure(context.getString(R.string.schedule_fail_permission_required));
                         }
                     }).check();
         } else {
