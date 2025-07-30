@@ -4,10 +4,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <permission
-        android:name="com.appstronautstudios.PERMISSION_RECEIVE_NOTIFICATION"
-        android:protectionLevel="normal" />
-
     <application
         android:allowBackup="true"
         android:supportsRtl="true">

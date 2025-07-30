@@ -170,7 +170,10 @@ public class CreateAlarmActivity extends AppCompatActivity {
                         new AlertDialog.Builder(CreateAlarmActivity.this)
                                 .setTitle("Error")
                                 .setMessage(errorMessage)
-                                .setPositiveButton("OK", null)
+                                .setPositiveButton("Ok", null)
+                                .setNegativeButton("Settings", (dialogInterface, i) -> {
+                                    RepeatingAlarmManager.openNotificationSettings(CreateAlarmActivity.this);
+                                })
                                 .show();
                     }
                 });

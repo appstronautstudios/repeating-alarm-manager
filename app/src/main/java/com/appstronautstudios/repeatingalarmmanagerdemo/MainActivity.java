@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RepeatingAlarmManager.getInstance().resetAllAlarms(MainActivity.this);
+                Toast.makeText(MainActivity.this, "All alarms re-scheduled", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -124,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 intervalTV.setText(TimeUnit.MILLISECONDS.toDays(alarm.getInterval()) + "d");
             }
 
+            enableDisableCB.setOnCheckedChangeListener(null);
             enableDisableCB.setChecked(alarm.isActive());
             enableDisableCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -143,7 +145,10 @@ public class MainActivity extends AppCompatActivity {
                                 new AlertDialog.Builder(MainActivity.this)
                                         .setTitle("Error")
                                         .setMessage(errorMessage)
-                                        .setPositiveButton("OK", null)
+                                        .setPositiveButton("Ok", null)
+                                        .setNegativeButton("Settings", (dialogInterface, i) -> {
+                                            RepeatingAlarmManager.openNotificationSettings(MainActivity.this);
+                                        })
                                         .show();
                             }
                         });

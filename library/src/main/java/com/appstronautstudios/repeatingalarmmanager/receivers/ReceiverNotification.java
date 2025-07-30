@@ -1,9 +1,5 @@
 package com.appstronautstudios.repeatingalarmmanager.receivers;
 
-import static com.appstronautstudios.repeatingalarmmanager.utils.Constants.NOTIFICATION_IS_DEFAULT;
-import static com.appstronautstudios.repeatingalarmmanager.utils.Constants.NOTIFICATION_TRACKER_ACTION;
-import static com.appstronautstudios.repeatingalarmmanager.utils.Constants.NOTIFICATION_TRACKER_PERMISSION;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -69,13 +65,8 @@ public class ReceiverNotification extends BroadcastReceiver {
 
                 // notify
                 NotificationManagerCompat.from(context).notify(alarmId, notificationBuilder.build());
-
-                // broadcast for tracking
-                Intent broadcastIntent = new Intent(NOTIFICATION_TRACKER_ACTION);
-                broadcastIntent.putExtra(NOTIFICATION_IS_DEFAULT, alarmId == RepeatingAlarmManager.ALARM_DEFAULT_ID);
-                context.sendBroadcast(broadcastIntent, NOTIFICATION_TRACKER_PERMISSION);
             } catch (ClassNotFoundException | SecurityException e) {
-                e.printStackTrace();
+                Log.e(Constants.LOG_KEY, "Failed to create PendingIntent for alarm activity: " + alarm.getActivityClass(), e);
             }
 
             // now that we're using idle proof alarms they cannot repeat on their own. This means
