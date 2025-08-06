@@ -27,10 +27,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * https://github.com/Ajeet-Meena/SimpleAlarmManager-Android
@@ -464,5 +467,39 @@ public class RepeatingAlarmManager {
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
+    }
+
+    public static String timeUntilAsString(Context context, long timestamp) {
+        long millisUntil = timestamp - System.currentTimeMillis();
+        long totalMinutes = TimeUnit.MILLISECONDS.toMinutes(millisUntil);
+        long hours = totalMinutes / 60;
+        long minutes = totalMinutes % 60;
+        return context.getString(R.string.next_notification_in) + " " + hours + "h " + minutes + "m";
+    }
+
+    public static String timestampToReadableTimeString(long timeStamp) {
+        Date date = new Date(timeStamp);
+        String outDate = null;
+        try {
+            SimpleDateFormat fmtOut = new SimpleDateFormat("h:mm aa");
+            outDate = fmtOut.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return outDate;
+    }
+
+    public static String timestampToReadableDateString(long timeStamp) {
+        Date date = new Date(timeStamp);
+        String outDate = null;
+        try {
+            SimpleDateFormat fmtOut = new SimpleDateFormat("MMM dd, yyyy");
+            outDate = fmtOut.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return outDate;
     }
 }

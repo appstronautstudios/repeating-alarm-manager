@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="next_notification_at">Prossima notifica alle ore:</string>
+    <string name="next_notification_in">Prossima notifica alle in:</string>
+</resources>

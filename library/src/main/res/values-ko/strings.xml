@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="next_notification_at">다음 알림 시각:</string>
+    <string name="next_notification_in">다음 알림:</string>
+</resources>

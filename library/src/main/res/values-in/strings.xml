@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="next_notification_at">Pemberitahuan selanjutnya pada:</string>
+    <string name="next_notification_in">Pemberitahuan berikutnya di:</string>
+</resources>
