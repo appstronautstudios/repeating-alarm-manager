@@ -29,13 +29,24 @@ public class ReceiverNotification extends BroadcastReceiver {
         int alarmId = -1;
         if (extras != null) {
             alarmId = extras.getInt(Constants.ALARM_ID);
-            Log.d(Constants.LOG_KEY, "setting up notification for alarm: " + alarmId);
+            Log.d(Constants.LOG_KEY, "Setting up notification for alarm: " + alarmId);
         }
 
         // did we catch a valid alarm
-        if (alarmId >= 0) {
-            RepeatingAlarm alarm = RepeatingAlarmManager.getInstance().getAlarm(context, alarmId);
+        if (alarmId < 0) {
+            Log.w(Constants.LOG_KEY, "Invalid alarm id; skipping notification");
+            return;
+        }
 
+        // can we find the alarm in prefs
+        RepeatingAlarm alarm = RepeatingAlarmManager.getInstance().getAlarm(context, alarmId);
+        if (alarm == null) {
+            Log.w(Constants.LOG_KEY, "No alarm found for id " + alarmId + "; skipping notification");
+            return;
+        }
+
+        // post notification if allowed
+        if (RepeatingAlarmManager.canPostNotifications(context, CHANNEL_ID)) {
             // Android 8.0 garbage
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 CharSequence channelName = "Daily reminders";
@@ -65,14 +76,16 @@ public class ReceiverNotification extends BroadcastReceiver {
 
                 // notify
                 NotificationManagerCompat.from(context).notify(alarmId, notificationBuilder.build());
-            } catch (ClassNotFoundException | SecurityException e) {
-                Log.e(Constants.LOG_KEY, "Failed to create PendingIntent for alarm activity: " + alarm.getActivityClass(), e);
+            } catch (ClassNotFoundException e) {
+                Log.e(Constants.LOG_KEY, "Failed to Post Notification to alarm activity: " + alarm.getActivityClass(), e);
+            } catch (SecurityException e) {
+                Log.e(Constants.LOG_KEY, "Invalid permission to Post Notification ", e);
             }
-
-            // now that we're using idle proof alarms they cannot repeat on their own. This means
-            // every time we catch an alarm in this receiver we also have to reschedule it. To
-            // keep things simple we're going to reschedule all alarms
-            RepeatingAlarmManager.getInstance().resetAllAlarms(context);
         }
+
+        // now that we're using idle proof alarms they cannot repeat on their own. This means
+        // every time we catch a real alarm in this receiver we also have to reschedule it. To
+        // keep things simple we're going to reschedule all alarms
+        RepeatingAlarmManager.getInstance().resetAllAlarms(context);
     }
 }

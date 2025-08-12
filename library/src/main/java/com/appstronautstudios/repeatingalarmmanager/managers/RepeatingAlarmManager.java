@@ -6,10 +6,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
+
+import androidx.core.content.ContextCompat;
 
 import com.appstronautstudios.repeatingalarmmanager.R;
 import com.appstronautstudios.repeatingalarmmanager.model.RepeatingAlarm;
@@ -31,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -165,6 +170,11 @@ public class RepeatingAlarmManager {
 
                 @Override
                 public void failure(String errorMessage) {
+                    // failed to schedule but don't want just throw out creation entirely otherwise
+                    // it opens a whole can of worms when trying to create alarms and expecting them
+                    // to exist like with default alarms
+                    addedAlarm.setActive(false);
+                    addAlarmPref(context, addedAlarm);
                     if (listener != null)
                         listener.failure(context.getString(R.string.schedule_fail_permission_required));
                 }
@@ -421,7 +431,7 @@ public class RepeatingAlarmManager {
         for (RepeatingAlarm alarm : repeatingAlarms) {
             cancelAlarm(context, alarm.getId());
             if (alarm.isActive()) {
-                scheduleRepeatingAlarmWithPermission(context, alarm, null);
+                scheduleRepeatingAlarm(context, alarm);
             }
         }
     }
@@ -481,10 +491,10 @@ public class RepeatingAlarmManager {
         Date date = new Date(timeStamp);
         String outDate = null;
         try {
-            SimpleDateFormat fmtOut = new SimpleDateFormat("h:mm aa");
+            SimpleDateFormat fmtOut = new SimpleDateFormat("h:mm aa", Locale.getDefault());
             outDate = fmtOut.format(date);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.LOG_KEY, "Error occurred", e);
         }
 
         return outDate;
@@ -494,12 +504,46 @@ public class RepeatingAlarmManager {
         Date date = new Date(timeStamp);
         String outDate = null;
         try {
-            SimpleDateFormat fmtOut = new SimpleDateFormat("MMM dd, yyyy");
+            SimpleDateFormat fmtOut = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
             outDate = fmtOut.format(date);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.LOG_KEY, "Error occurred", e);
         }
 
         return outDate;
+    }
+
+    public static boolean hasNotificationPermission(Context context) {
+        boolean hasPermission = true; // pre-tiramisu notifications didn't need permissions
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        return hasPermission;
+    }
+
+    public static boolean canPostNotifications(Context context, String channelId) {
+        // 1) Runtime permission (Tiramisu+)
+        if (!hasNotificationPermission(context)) {
+            return false;
+        }
+
+        // 2) App-level notification block (user toggled off)
+        if (!androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            return false;
+        }
+
+        // 3) Channel-level block (O+). If channel doesn't exist yet, don't treat as blocked.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            Object svc = context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (!(svc instanceof android.app.NotificationManager)) return false;
+            android.app.NotificationManager nm = (android.app.NotificationManager) svc;
+            android.app.NotificationChannel ch = nm.getNotificationChannel(channelId);
+            if (ch != null && ch.getImportance() == android.app.NotificationManager.IMPORTANCE_NONE) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
