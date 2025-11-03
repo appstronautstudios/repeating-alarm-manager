@@ -487,32 +487,6 @@ public class RepeatingAlarmManager {
         return context.getString(R.string.next_notification_in) + " " + hours + "h " + minutes + "m";
     }
 
-    public static String timestampToReadableTimeString(long timeStamp) {
-        Date date = new Date(timeStamp);
-        String outDate = null;
-        try {
-            SimpleDateFormat fmtOut = new SimpleDateFormat("h:mm aa", Locale.getDefault());
-            outDate = fmtOut.format(date);
-        } catch (Exception e) {
-            Log.e(Constants.LOG_KEY, "Error occurred", e);
-        }
-
-        return outDate;
-    }
-
-    public static String timestampToReadableDateString(long timeStamp) {
-        Date date = new Date(timeStamp);
-        String outDate = null;
-        try {
-            SimpleDateFormat fmtOut = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-            outDate = fmtOut.format(date);
-        } catch (Exception e) {
-            Log.e(Constants.LOG_KEY, "Error occurred", e);
-        }
-
-        return outDate;
-    }
-
     public static boolean hasNotificationPermission(Context context) {
         boolean hasPermission = true; // pre-tiramisu notifications didn't need permissions
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
