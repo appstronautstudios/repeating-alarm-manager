@@ -69,7 +69,7 @@ public class ReceiverNotification extends BroadcastReceiver {
                         .setContentTitle(alarm.getTitle())
                         .setContentText(alarm.getDescription())
                         .setContentIntent(pendingIntent)
-                        .setSmallIcon(context.getApplicationInfo().icon)
+                        .setSmallIcon(RepeatingAlarmManager.getActiveLauncherIconResourceId(context))
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setGroup(GROUP)
                         .setAutoCancel(true);

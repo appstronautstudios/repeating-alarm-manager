@@ -3,15 +3,17 @@ package com.appstronautstudios.repeatingalarmmanager.managers;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
@@ -31,11 +33,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.Locale;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -519,5 +519,25 @@ public class RepeatingAlarmManager {
         }
 
         return true;
+    }
+
+    public static int getActiveLauncherIconResourceId(Context context) {
+        PackageManager pm = context.getPackageManager();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setPackage(context.getPackageName());
+
+        List<ResolveInfo> resolveInfos = pm.queryIntentActivities(intent, 0);
+
+        for (ResolveInfo info : resolveInfos) {
+            ComponentName cn = new ComponentName(info.activityInfo.packageName, info.activityInfo.name);
+            if (pm.getComponentEnabledSetting(cn) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                // This returns the R.mipmap.ic_launcher_p or poop ID dynamically
+                return info.activityInfo.getIconResource();
+            }
+        }
+
+        // Final fallback to the application's icon resource
+        return context.getApplicationInfo().icon;
     }
 }
