@@ -12,6 +12,7 @@ public class Constants {
     public static final String ALARM_DESCRIPTION = "description";
     public static final String ALARM_CLICK_ACTIVITY = "clickActivity";
     public static final String ALARM_ACTIVE = "active";
+    public static final String ALARM_SMALL_ICON = "small_icon";
 
     public static final String LOG_KEY = "RepAM";
 }

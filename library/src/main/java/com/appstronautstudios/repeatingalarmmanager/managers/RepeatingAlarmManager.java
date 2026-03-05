@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -65,14 +64,14 @@ public class RepeatingAlarmManager {
     /**
      * add alarm to managed set and schedule it
      *
-     * @param context     - context
-     * @param hour        - hour of date to set alarm (0-24)
-     * @param minute      - minute of hour to set alarm (0-60)
-     * @param interval    - MS interval to repeat alarm over
-     * @param title       - title for notification
-     * @param description - detail text for notification
-     * @param activity    - activity class to be opened on notification click
-     * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
+     * @param context     context
+     * @param hour        hour of date to set alarm (0-24)
+     * @param minute      minute of hour to set alarm (0-60)
+     * @param interval    MS interval to repeat alarm over
+     * @param title       title for notification
+     * @param description detail text for notification
+     * @param activity    activity class to be opened on notification click
+     * @param listener    success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
     public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, Class activity, AlarmUpdateListener listener) {
         addAlarm(
@@ -90,16 +89,44 @@ public class RepeatingAlarmManager {
     /**
      * add alarm to managed set and schedule it
      *
-     * @param context     - context
-     * @param hour        - hour of date to set alarm (0-24)
-     * @param minute      - minute of hour to set alarm (0-60)
-     * @param interval    - MS interval to repeat alarm over
-     * @param title       - title for notification
-     * @param description - detail text for notification
-     * @param activity    - activity class to be opened on notification click
-     * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
+     * @param context       context
+     * @param hour          hour of date to set alarm (0-24)
+     * @param minute        minute of hour to set alarm (0-60)
+     * @param interval      MS interval to repeat alarm over
+     * @param title         title for notification
+     * @param description   detail text for notification
+     * @param startingState start alarm on or off when created
+     * @param activity      activity class to be opened on notification click
+     * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
     public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, AlarmUpdateListener listener) {
+        addAlarm(
+                context,
+                hour,
+                minute,
+                interval,
+                title,
+                description,
+                startingState,
+                0,
+                activity,
+                listener);
+    }
+
+
+    /**
+     * @param context       context
+     * @param hour          hour of date to set alarm (0-24)
+     * @param minute        minute of hour to set alarm (0-60)
+     * @param interval      MS interval to repeat alarm over
+     * @param title         title for notification
+     * @param description   detail text for notification
+     * @param startingState start alarm on or off when created
+     * @param smallIcon     resource id of small icon
+     * @param activity      activity class to be opened on notification click
+     * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
+     */
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, Class activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 getUnusedAlarmId(context),
@@ -109,6 +136,7 @@ public class RepeatingAlarmManager {
                 title,
                 description,
                 startingState,
+                smallIcon,
                 activity,
                 listener);
     }
@@ -116,17 +144,19 @@ public class RepeatingAlarmManager {
     /**
      * add alarm to managed set and schedule it
      *
-     * @param context     - context
-     * @param id          - alarm id. Will override if already exists
-     * @param hour        - hour of date to set alarm (0-24)
-     * @param minute      - minute of hour to set alarm (0-60)
-     * @param interval    - MS interval to repeat alarm over
-     * @param title       - title for notification
-     * @param description - detail text for notification
-     * @param activity    - activity class to be opened on notification click
-     * @param listener    - success/fail listener for add operation. Timestamp of next trigger on success, message on failure
+     * @param context       context
+     * @param id            alarm id. Will override if already exists
+     * @param hour          hour of date to set alarm (0-24)
+     * @param minute        minute of hour to set alarm (0-60)
+     * @param interval      MS interval to repeat alarm over
+     * @param title         title for notification
+     * @param description   detail text for notification
+     * @param startingState start alarm on or off when created
+     * @param smallIcon     resource id of small icon
+     * @param activity      activity class to be opened on notification click
+     * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, Class activity, AlarmUpdateListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -156,9 +186,9 @@ public class RepeatingAlarmManager {
         }
 
         // create alarm object
-        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity.getName(), startingState);
+        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity.getName(), startingState, smallIcon);
 
-        // if its supposed to start active attempt to schedule
+        // if it's supposed to start active attempt to schedule
         if (startingState) {
             scheduleRepeatingAlarmWithPermission(context, addedAlarm, new AlarmUpdateListener() {
                 @Override
@@ -233,8 +263,8 @@ public class RepeatingAlarmManager {
     /**
      * Cancel chosen alarm and remove it from the managed set
      *
-     * @param context - context
-     * @param id      - id of alarm to cancel and remove
+     * @param context context
+     * @param id      id of alarm to cancel and remove
      */
     public void removeAlarm(Context context, int id) {
         cancelAlarm(context, id);
@@ -252,7 +282,7 @@ public class RepeatingAlarmManager {
     /**
      * Cancel all managed alarms and remove them from the managed set
      *
-     * @param context - context
+     * @param context context
      */
     public void removeAllAlarms(Context context) {
         ArrayList<RepeatingAlarm> allAlarms = getAllAlarms(context);
@@ -266,9 +296,9 @@ public class RepeatingAlarmManager {
     /**
      * set managed alarm activate state if it exists.
      *
-     * @param context  - context
-     * @param id       - id of alarm to active
-     * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
+     * @param context  context
+     * @param id       id of alarm to active
+     * @param listener success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
     public void setAlarmActive(Context context, int id, boolean active, AlarmUpdateListener listener) {
         if (active) {
@@ -281,9 +311,9 @@ public class RepeatingAlarmManager {
     /**
      * activate managed alarm if it exists.
      *
-     * @param context  - context
-     * @param id       - id of alarm to active
-     * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
+     * @param context  context
+     * @param id       id of alarm to active
+     * @param listener success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
     public void activateAlarm(Context context, int id, AlarmUpdateListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
@@ -311,9 +341,9 @@ public class RepeatingAlarmManager {
     /**
      * deactivate managed alarm if it exists.
      *
-     * @param context  - context
-     * @param id       - id of alarm to deactivate
-     * @param listener - success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
+     * @param context  context
+     * @param id       id of alarm to deactivate
+     * @param listener success/fail listener for activate operation. Timestamp of next trigger on success, message on failure
      */
     public void deactivateAlarm(Context context, int id, AlarmUpdateListener listener) {
         RepeatingAlarm alarm = getAlarm(context, id);
@@ -331,8 +361,8 @@ public class RepeatingAlarmManager {
     /**
      * schedule alarm. Will NOT update pref storage
      *
-     * @param context - context
-     * @param alarm   - alarm to schedule
+     * @param context context
+     * @param alarm   alarm to schedule
      */
     private void scheduleRepeatingAlarmWithPermission(final Context context, final RepeatingAlarm alarm, AlarmUpdateListener listener) {
         // scheduling inexact alarms does NOT require permissions but as of android 33 notifying the
@@ -372,8 +402,8 @@ public class RepeatingAlarmManager {
     /**
      * schedule alarm. Will NOT update pref storage
      *
-     * @param context - context
-     * @param alarm   - alarm to schedule
+     * @param context context
+     * @param alarm   alarm to schedule
      */
     private void scheduleRepeatingAlarm(final Context context, final RepeatingAlarm alarm) {
         // create alarm intent and schedule (will be delayed during "doze periods")
@@ -390,8 +420,8 @@ public class RepeatingAlarmManager {
     /**
      * cancel alarm. Will NOT update pref storage
      *
-     * @param context - context
-     * @param id      - alarm to schedule
+     * @param context context
+     * @param id      alarm to schedule
      */
     private void cancelAlarm(Context context, int id) {
         Intent intent = new Intent(context, ReceiverNotification.class);

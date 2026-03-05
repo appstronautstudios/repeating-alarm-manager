@@ -1,12 +1,11 @@
 package com.appstronautstudios.repeatingalarmmanager.model;
 
+import com.appstronautstudios.repeatingalarmmanager.R;
 import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Calendar;
 
 public class RepeatingAlarm {
@@ -18,6 +17,7 @@ public class RepeatingAlarm {
     private String description;
     private String activityClass;
     private boolean active;
+    private int smallIcon;
 
     public RepeatingAlarm(JSONObject object) {
         id = object.optInt(Constants.ALARM_ID);
@@ -28,9 +28,10 @@ public class RepeatingAlarm {
         description = object.optString(Constants.ALARM_DESCRIPTION);
         activityClass = object.optString(Constants.ALARM_CLICK_ACTIVITY);
         active = object.optBoolean(Constants.ALARM_ACTIVE);
+        smallIcon = object.optInt(Constants.ALARM_SMALL_ICON);
     }
 
-    public RepeatingAlarm(int id, int hours, int minutes, long interval, String title, String description, String activity, boolean active) {
+    public RepeatingAlarm(int id, int hours, int minutes, long interval, String title, String description, String activity, boolean active, int smallIcon) {
         this.id = id;
         this.hour = hours;
         this.minute = minutes;
@@ -39,6 +40,8 @@ public class RepeatingAlarm {
         this.description = description;
         this.activityClass = activity;
         this.active = active;
+        // Using Android System defaults if 0 is provided
+        this.smallIcon = (smallIcon != 0) ? smallIcon : R.drawable.ic_stat_android;
     }
 
     public JSONObject convertToJsonObject() {
@@ -52,6 +55,7 @@ public class RepeatingAlarm {
             alarmJson.put(Constants.ALARM_DESCRIPTION, getDescription());
             alarmJson.put(Constants.ALARM_CLICK_ACTIVITY, getActivityClass());
             alarmJson.put(Constants.ALARM_ACTIVE, isActive());
+            alarmJson.put(Constants.ALARM_SMALL_ICON, getSmallIcon());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -92,6 +96,10 @@ public class RepeatingAlarm {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public int getSmallIcon() {
+        return smallIcon;
     }
 
     public String getHumanReadableTime() {

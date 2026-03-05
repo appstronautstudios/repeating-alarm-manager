@@ -56,13 +56,13 @@ public class CreateAlarmActivity extends AppCompatActivity {
         final TextView timeTV = findViewById(R.id.time_et);
 
         Calendar calendar = new GregorianCalendar();
-        calendar.setTimeInMillis(alarmDate);
+        calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) + 5);
 
+        mHour = calendar.get(Calendar.HOUR_OF_DAY); // Will be 11
+        mMinute = calendar.get(Calendar.MINUTE);    // Will be 02
         mYear = calendar.get(Calendar.YEAR);
         mMonth = calendar.get(Calendar.MONTH);
         mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        mHour = calendar.get(Calendar.HOUR_OF_DAY);
-        mMinute = calendar.get(Calendar.MINUTE) + 5;
 
         updateDateTime();
 
