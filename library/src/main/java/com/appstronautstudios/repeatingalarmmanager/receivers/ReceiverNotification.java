@@ -4,6 +4,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -59,7 +60,8 @@ public class ReceiverNotification extends BroadcastReceiver {
             // create intent that will kick user to main activity on notification click
             Intent activityIntent;
             try {
-                activityIntent = new Intent(context, Class.forName(alarm.getActivityClass()));
+                activityIntent = new Intent();
+                activityIntent.setComponent(new ComponentName(context.getPackageName(), alarm.getActivityClass()));
                 activityIntent.putExtra("notificationClicked", alarmId);
                 activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
@@ -76,8 +78,6 @@ public class ReceiverNotification extends BroadcastReceiver {
 
                 // notify
                 NotificationManagerCompat.from(context).notify(alarmId, notificationBuilder.build());
-            } catch (ClassNotFoundException e) {
-                Log.e(Constants.LOG_KEY, "Failed to Post Notification to alarm activity: " + alarm.getActivityClass(), e);
             } catch (SecurityException e) {
                 Log.e(Constants.LOG_KEY, "Invalid permission to Post Notification ", e);
             }

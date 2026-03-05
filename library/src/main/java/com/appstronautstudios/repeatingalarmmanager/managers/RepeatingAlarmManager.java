@@ -73,7 +73,7 @@ public class RepeatingAlarmManager {
      * @param activity    activity class to be opened on notification click
      * @param listener    success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, Class activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, String activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 hour,
@@ -99,7 +99,7 @@ public class RepeatingAlarmManager {
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, Class activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, String activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 hour,
@@ -126,7 +126,7 @@ public class RepeatingAlarmManager {
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, Class activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, String activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 getUnusedAlarmId(context),
@@ -156,7 +156,7 @@ public class RepeatingAlarmManager {
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, Class activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, String activity, AlarmUpdateListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -186,7 +186,7 @@ public class RepeatingAlarmManager {
         }
 
         // create alarm object
-        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity.getName(), startingState, smallIcon);
+        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity, startingState, smallIcon);
 
         // if it's supposed to start active attempt to schedule
         if (startingState) {

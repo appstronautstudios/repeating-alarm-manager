@@ -154,7 +154,7 @@ public class CreateAlarmActivity extends AppCompatActivity {
                 timeInterval,
                 alarmNameET.getText().toString(),
                 alarmDescET.getText().toString(),
-                MainActivity.class,
+                MainActivity.class.getName(),
                 new AlarmUpdateListener() {
                     @Override
                     public void success(long nextAlarmTimestamp) {
