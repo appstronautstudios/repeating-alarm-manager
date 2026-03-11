@@ -108,7 +108,7 @@ public class RepeatingAlarmManager {
                 title,
                 description,
                 startingState,
-                0,
+                null,
                 activity,
                 listener);
     }
@@ -122,11 +122,11 @@ public class RepeatingAlarmManager {
      * @param title         title for notification
      * @param description   detail text for notification
      * @param startingState start alarm on or off when created
-     * @param smallIcon     resource id of small icon
+     * @param iconName      resource name of small icon
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, String activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, String iconName, String activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 getUnusedAlarmId(context),
@@ -136,7 +136,7 @@ public class RepeatingAlarmManager {
                 title,
                 description,
                 startingState,
-                smallIcon,
+                iconName,
                 activity,
                 listener);
     }
@@ -152,11 +152,11 @@ public class RepeatingAlarmManager {
      * @param title         title for notification
      * @param description   detail text for notification
      * @param startingState start alarm on or off when created
-     * @param smallIcon     resource id of small icon
+     * @param iconName      resource name of small icon
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, int smallIcon, String activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, String iconName, String activity, AlarmUpdateListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -186,7 +186,7 @@ public class RepeatingAlarmManager {
         }
 
         // create alarm object
-        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity, startingState, smallIcon);
+        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity, startingState, iconName);
 
         // if it's supposed to start active attempt to schedule
         if (startingState) {
@@ -235,7 +235,7 @@ public class RepeatingAlarmManager {
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(context);
         String alarmsPref = preferenceManager.getString(Constants.PREF_KEY_ALARMS, "[]");
 
-        // convert string json to ArrayList of alarms and return
+        // convert string JSON to ArrayList of alarms and return
         ArrayList<RepeatingAlarm> repeatingAlarms = new ArrayList<>();
         try {
             JSONArray alarmsJson = new JSONArray(alarmsPref);
@@ -437,7 +437,7 @@ public class RepeatingAlarmManager {
             alarms = new ArrayList<>();
         }
 
-        // convert alarm objects to json string
+        // convert alarm objects to JSON string
         JSONArray jsonArray = new JSONArray();
         for (RepeatingAlarm alarm : alarms) {
             jsonArray.put(alarm.convertToJsonObject());

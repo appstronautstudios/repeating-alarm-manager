@@ -1,6 +1,7 @@
 package com.appstronautstudios.repeatingalarmmanager.model;
 
-import com.appstronautstudios.repeatingalarmmanager.R;
+import android.content.Context;
+
 import com.appstronautstudios.repeatingalarmmanager.utils.Constants;
 
 import org.json.JSONException;
@@ -17,7 +18,8 @@ public class RepeatingAlarm {
     private String description;
     private String activityClass;
     private boolean active;
-    private int smallIcon;
+    private int smallIcon; // DO NOT USE! int resource ids are not consistent across updates
+    private String smallIconName;
 
     public RepeatingAlarm(JSONObject object) {
         id = object.optInt(Constants.ALARM_ID);
@@ -29,9 +31,10 @@ public class RepeatingAlarm {
         activityClass = object.optString(Constants.ALARM_CLICK_ACTIVITY);
         active = object.optBoolean(Constants.ALARM_ACTIVE);
         smallIcon = object.optInt(Constants.ALARM_SMALL_ICON);
+        smallIconName = object.optString(Constants.ALARM_SMALL_ICON_NAME);
     }
 
-    public RepeatingAlarm(int id, int hours, int minutes, long interval, String title, String description, String activity, boolean active, int smallIcon) {
+    public RepeatingAlarm(int id, int hours, int minutes, long interval, String title, String description, String activity, boolean active, String iconName) {
         this.id = id;
         this.hour = hours;
         this.minute = minutes;
@@ -40,8 +43,7 @@ public class RepeatingAlarm {
         this.description = description;
         this.activityClass = activity;
         this.active = active;
-        // Using Android System defaults if 0 is provided
-        this.smallIcon = (smallIcon != 0) ? smallIcon : R.drawable.ic_stat_android;
+        this.smallIconName = iconName;
     }
 
     public JSONObject convertToJsonObject() {
@@ -55,7 +57,7 @@ public class RepeatingAlarm {
             alarmJson.put(Constants.ALARM_DESCRIPTION, getDescription());
             alarmJson.put(Constants.ALARM_CLICK_ACTIVITY, getActivityClass());
             alarmJson.put(Constants.ALARM_ACTIVE, isActive());
-            alarmJson.put(Constants.ALARM_SMALL_ICON, getSmallIcon());
+            alarmJson.put(Constants.ALARM_SMALL_ICON_NAME, getSmallIconName());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -98,8 +100,26 @@ public class RepeatingAlarm {
         this.active = active;
     }
 
-    public int getSmallIcon() {
-        return smallIcon;
+    public int getSmallIcon(Context context) {
+        String name = getSmallIconName();
+        int iconResId = 0;
+
+        if (name != null && !name.isEmpty()) {
+            iconResId = context.getResources().getIdentifier(name, "drawable", context.getPackageName());
+        }
+
+        if (iconResId == 0) {
+            // Fallback to app icon first, then system info icon
+            iconResId = context.getApplicationInfo().icon;
+            if (iconResId == 0) {
+                iconResId = android.R.drawable.ic_dialog_info;
+            }
+        }
+        return iconResId;
+    }
+
+    public String getSmallIconName() {
+        return smallIconName;
     }
 
     public String getHumanReadableTime() {

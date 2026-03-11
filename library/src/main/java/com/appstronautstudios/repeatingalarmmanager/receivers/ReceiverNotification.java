@@ -71,7 +71,7 @@ public class ReceiverNotification extends BroadcastReceiver {
                         .setContentTitle(alarm.getTitle())
                         .setContentText(alarm.getDescription())
                         .setContentIntent(pendingIntent)
-                        .setSmallIcon(alarm.getSmallIcon())
+                        .setSmallIcon(alarm.getSmallIcon(context))
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setGroup(GROUP)
                         .setAutoCancel(true);
