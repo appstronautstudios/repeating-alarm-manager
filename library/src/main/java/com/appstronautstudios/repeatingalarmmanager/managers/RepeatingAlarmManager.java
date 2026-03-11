@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
@@ -108,7 +109,7 @@ public class RepeatingAlarmManager {
                 title,
                 description,
                 startingState,
-                null,
+                0,
                 activity,
                 listener);
     }
@@ -122,11 +123,11 @@ public class RepeatingAlarmManager {
      * @param title         title for notification
      * @param description   detail text for notification
      * @param startingState start alarm on or off when created
-     * @param iconName      resource name of small icon
+     * @param iconId        resource name of small icon
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, String iconName, String activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int hour, int minute, long interval, String title, String description, boolean startingState, int iconId, String activity, AlarmUpdateListener listener) {
         addAlarm(
                 context,
                 getUnusedAlarmId(context),
@@ -136,7 +137,7 @@ public class RepeatingAlarmManager {
                 title,
                 description,
                 startingState,
-                iconName,
+                iconId,
                 activity,
                 listener);
     }
@@ -152,11 +153,11 @@ public class RepeatingAlarmManager {
      * @param title         title for notification
      * @param description   detail text for notification
      * @param startingState start alarm on or off when created
-     * @param iconName      resource name of small icon
+     * @param iconId        resource name of small icon
      * @param activity      activity class to be opened on notification click
      * @param listener      success/fail listener for add operation. Timestamp of next trigger on success, message on failure
      */
-    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, String iconName, String activity, AlarmUpdateListener listener) {
+    public void addAlarm(Context context, int id, int hour, int minute, long interval, String title, String description, boolean startingState, int iconId, String activity, AlarmUpdateListener listener) {
         // get alarms and check which ids are in use
         Set<Integer> usedIds = new HashSet<>();
         ArrayList<RepeatingAlarm> alarms = getAllAlarms(context);
@@ -185,8 +186,22 @@ public class RepeatingAlarmManager {
             removeAlarm(context, id);
         }
 
+        // fetch the name of the icon provided via ID immediately before saving it. Resource ids
+        // are volatile but filenames are not. The only reason we want to force the user to add
+        // an alarm via resource id is to force them to give a hard resource reference in their
+        // code thus ideally preventing proguard from trimming out that asset.
+        String name = "";
+        try {
+            if (iconId > 0) {
+                name = context.getResources().getResourceEntryName(iconId);
+            }
+        } catch (android.content.res.Resources.NotFoundException e) {
+            // Log the error so the dev knows they passed a bad ID
+            Log.e("RepeatingAlarmManager", "Invalid iconId provided: " + iconId);
+        }
+
         // create alarm object
-        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity, startingState, iconName);
+        RepeatingAlarm addedAlarm = new RepeatingAlarm(id, hour, minute, interval, title, description, activity, startingState, name);
 
         // if it's supposed to start active attempt to schedule
         if (startingState) {
